@@ -1,18 +1,9 @@
 /*
  * =====================================================================================
- *
- *       Filename:  hash.h
- *
- *    Description:  Archivo de cabecera de el hash.
- *
- *        Version:  1.0
- *        Created:  06/10/14 01:31:52
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  YOUR NAME (), 
- *   Organization:  
- *
+ *  Archivo:  hash.h
+ *  Descripcion:  Archivo de cabecera de el hash.
+ *  Autores:  Porto Manuel Ignacio, Sueiro Ignacio Andres 
+ *  Padrones:  96587, *insertar padron*
  * =====================================================================================
  */
 
