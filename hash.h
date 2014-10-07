@@ -3,7 +3,7 @@
  *  Archivo:  hash.h
  *  Descripcion:  Archivo de cabecera de el hash.
  *  Autores:  Porto Manuel Ignacio, Sueiro Ignacio Andres 
- *  Padrones:  96587, *insertar padron*
+ *  Padrones:  96587, 96817
  * =====================================================================================
  */
 
@@ -64,8 +64,25 @@ void hash_destruir(hash_t *hash);
  *  PRIMITIVAS DEL ITERADOR
  *-----------------------------------------------------------------------------*/
 
+// Crea el iterador. Lo posiciona en el primer elemento
+// Pre: -
+// Post: Devuelve NULL si la tabla está vacía o si hubo algún error
 hash_iter_t *hash_iter_crear(const hash_t *hash);
+
+// Avanza al siguiente elemento de la tabla.
+// Pre: el iterador fue creado
+// Post: devuelve true si todo OK, false en caso de error o que el iterador esté al final
 bool hash_iter_avanzar(hash_iter_t *iter);
+
+// Pre: el iterador fue creado
+// Post: devuelve NULL si el iterador está al final. La clave del elemento actual en caso
+// contrario
 const char *hash_iter_ver_actual(const hash_iter_t *iter);
+
+// Pre: el iterador fue creado
+// Post: devuelve true si está al final, false en caso contrario
 bool hash_iter_al_final(const hash_iter_t *iter);
+
+// Pre: el iterador fue creado.
+// Post: destruye el iterador y libera toda la memoria utilizada por este
 void hash_iter_destruir(hash_iter_t* iter);
