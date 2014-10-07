@@ -176,11 +176,17 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 
 void *hash_borrar(hash_t *hash, const char *clave)
 {
-    nodo_hash_t *nodo_hash_buscado = hash_obtener
+    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave, strlen(clave));
+    if(!nodo_hash_buscado) return NULL;
 }
 
 void *hash_obtener(const hash_t *hash, const char *clave)
 {
+    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave, strlen(clave));
+    if(!nodo_buscado) return NULL;
+
+    return nodo_buscado->dato;
+
 }
 
 bool hash_pertenece(const hash_t *hash, const char *clave)
