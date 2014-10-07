@@ -48,7 +48,13 @@ struct hash
     void destruir_dato;
 }
 
-struct hash_iter;
+struct hash_iter{
+    hash_t *hash;
+    size_t posicion_vector;
+    size_t datos_pasados;
+    lista_iter_t *iter_interno;
+    char *clave_actual;
+};
 
 
 
@@ -213,3 +219,73 @@ void hash_destruir(hash_t *hash)
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL ITERADOR
  *-----------------------------------------------------------------------------*/
+
+hash_iter_t *hash_iter_crear(const hash_t *hash){
+    if(hash_cantidad(hash)) return NULL;
+    
+    hash_iter_t *hash_iter = malloc(sizeof(hash_iter_t));
+    if(!hash_iter) return NULL;
+    hash_iter->hash = hash;
+    size_t i;
+    // Avanzo hasta la primera lista que contiene algún elemento
+    for(i = 0; i < hash->tam; i++){
+        if(lista_esta_vacia(hash->vector[i])) continue;
+        hash_iter->iter_interno = lista_iter_crear(hash->vector[i]);
+        diccionario_t *dic_actual = (diccionario_t*)lista_iter_ver_actual(hash_iter->iter_interno);
+        hash_iter->clave_actual = dic_actual->clave;
+        break;
+    }
+    // Guardo el lugar del vector donde me quedé e inicializo en cero la cantidad de datos que pasé
+    hash_iter->posicion_vector = i;
+    hash_iter->datos_pasados = 0;
+    return hash_iter;
+}
+
+
+bool hash_iter_avanzar(hash_iter_t *iter){
+    if(hash_iter_esta_al_final(iter)) return false;
+    // Avanzo un lugar en la lista
+    lista_iter_avanzar(iter->iter_interno);
+    
+    // Caso especial en caso de que antes de avanzar esté en el último nodo de la última lista
+    if(iter->datos_pasados == iter->hash->cantidad -1){
+        iter->clave_actual = NULL;
+    }
+    // En cualquier otro caso
+    else{
+        // Si el actual es NULL, se terminó la lista y tengo que ir a la siguiente que tenga
+        // elementos.
+        // También tengo que destruir el iterador interno y crear otro cuando encuentre una nueva
+        // lista
+        if(!lista_iter_ver_actual(iter->iter_interno)){
+            lista_iter_destruir(iter->iter_interno);
+            size_t i;
+            for (i = iter->posicion_vector + 1; i < iter->hash->tam; i++){
+                if(lista_esta_vacia(iter->hash->vector[i])) continue;
+                iter->iter_interno = lista_iter_crear(hash->vector[i]);
+                break;
+            } 
+            // Actualizo la posicion del vector
+            iter->posicion_vector = i;
+        }
+    
+        diccionario_t *dic_actual = (diccionario_t*)lista_iter_ver_actual(iter->iter_interno);
+        iter->clave_actual = dic_actual->clave;
+    }
+    iter->datos_pasados += 1;
+    return true;
+}
+
+const char *hash_iter_ver_actual(const hash_iter_t *iter){
+    if(hash_iter_esta_al_final(iter)) return NULL;
+    return iter->clave_actual;
+}
+
+bool hash_iter_al_final(const hash_iter_t *iter){
+    return (iter->datos_pasados == iter->hash->cantidad);
+}
+
+void hash_iter_destruir(hash_iter_t* iter){
+    lista_iter_destruir(iter->iter_interno);
+    free(iter);
+}
