@@ -41,7 +41,7 @@ struct hash
 };
 
 struct hash_iter{
-    hash_t *hash;
+    const hash_t *hash;
     size_t posicion_vector;
     size_t datos_pasados;
     lista_iter_t *iter_interno;
@@ -89,7 +89,7 @@ static nodo_hash_t *nodo_crear(char *clave, void *dato)
 static void nodo_destruir(nodo_hash_t *nodo_hash, void destruir_dato(void*))
 {
     free(nodo_hash->clave);
-    if(destruir_dato != NULL) destruir_dato(nodo_hash->dato);
+    if(destruir_dato) destruir_dato(nodo_hash->dato);
     free(nodo_hash);
 }
 
@@ -102,10 +102,13 @@ static nodo_hash_t *nodo_buscar(const hash_t *hash, const char *clave)
     while(!lista_iter_al_final(iter_lista))
     {
         nodo_hash_t *nodo_hash_actual = lista_iter_ver_actual(iter_lista);
-        if(!strcmp(nodo_hash_actual->clave, clave))
+        if(!strcmp(nodo_hash_actual->clave, clave)){
+            lista_iter_destruir(iter_lista);
             return nodo_hash_actual;
+        }
+        lista_iter_avanzar(iter_lista);
     }
-
+    lista_iter_destruir(iter_lista);
     return NULL;
 }
 /*-----------------------------------------------------------------------------
@@ -118,7 +121,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
     if(!hash) return NULL;
 
     // Revisar! Puede que ese +1 este de mas.
-    hash->vector = malloc(sizeof(void*)*TAM_INI+1);
+    hash->vector = malloc(sizeof(void*)*TAM_INI);
     if(!hash->vector)
     {
         free(hash);
@@ -127,18 +130,20 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
  
     hash->tamanio = TAM_INI;
     hash->cantidad = 0;
-    for(size_t i = 0; i <= TAM_INI; i++) hash->vector[i] = lista_crear();
+    for(size_t i = 0; i < TAM_INI; i++) hash->vector[i] = lista_crear();
     // Revisar
     hash->destruir_dato = destruir_dato;
+    return hash;
 }
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 {
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
 
-    char *clave_cpy = malloc(sizeof(char));
+    char *clave_cpy = malloc(sizeof(char)*strlen(clave) + 1);
     if(!clave_cpy) return false;
 
+    strcpy(clave_cpy, clave);
     nodo_hash_t *nodo_hash = nodo_crear(clave_cpy, dato);
     if(!nodo_hash)
     {
@@ -160,7 +165,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 
     // Si dato no es NULL, significa que existia un par y debo eliminar el
     // dato para luego insertar el nuevo par.
-    hash->destruir_dato(dato_rec);
+    if(hash->destruir_dato) hash->destruir_dato(dato_rec);
     return lista_insertar_ultimo(hash->vector[codigo], nodo_hash);
 }
 
@@ -182,10 +187,12 @@ void *hash_borrar(hash_t *hash, const char *clave)
             void *dato = nodo_hash_viejo->dato;
             nodo_destruir(nodo_hash_viejo, NULL);
             hash->cantidad--;
+            lista_iter_destruir(iter_lista);
             return dato;
         }
+        lista_iter_avanzar(iter_lista);
     }
-
+    lista_iter_destruir(iter_lista);
     // Si no encontro nada devuelvo NULL.
     return NULL;
 }
@@ -211,22 +218,23 @@ size_t hash_cantidad(const hash_t *hash)
 
 void hash_destruir(hash_t *hash)
 {
-    for(size_t i = 0; i <= hash->tamanio; i++)
+    for(size_t i = 0; i < hash->tamanio; i++)
     {
-        if(lista_esta_vacia(hash->vector[i])) 
-        {
-            lista_destruir(hash->vector[i], NULL);
-            continue;
-        }
-
         while(!lista_esta_vacia(hash->vector[i]))
         {
             nodo_hash_t *nodo_hash_actual = 
                 lista_borrar_primero(hash->vector[i]);
             nodo_destruir(nodo_hash_actual, hash->destruir_dato);
         }
+        if(lista_esta_vacia(hash->vector[i])) 
+        {
+            lista_destruir(hash->vector[i], NULL);
+            continue;
+        }
 
     }
+    free(hash->vector);
+    free(hash);
 }
 
 
@@ -235,14 +243,14 @@ void hash_destruir(hash_t *hash)
  *-----------------------------------------------------------------------------*/
 
 hash_iter_t *hash_iter_crear(const hash_t *hash){
-    if(hash_cantidad(hash)) return NULL;
+    //if(hash_cantidad(hash) == 0) return NULL;
     
     hash_iter_t *hash_iter = malloc(sizeof(hash_iter_t));
     if(!hash_iter) return NULL;
     hash_iter->hash = hash;
     size_t i;
     // Avanzo hasta la primera lista que contiene algún elemento
-    for(i = 0; i < hash->tam; i++){
+    for(i = 0; i < hash->tamanio; i++){
         if(lista_esta_vacia(hash->vector[i])) continue;
         hash_iter->iter_interno = lista_iter_crear(hash->vector[i]);
         nodo_hash_t *dic_actual = (nodo_hash_t*)lista_iter_ver_actual(hash_iter->iter_interno);
@@ -257,7 +265,7 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
 
 
 bool hash_iter_avanzar(hash_iter_t *iter){
-    if(hash_iter_esta_al_final(iter)) return false;
+    if(hash_iter_al_final(iter)) return false;
     // Avanzo un lugar en la lista
     lista_iter_avanzar(iter->iter_interno);
     
@@ -274,9 +282,9 @@ bool hash_iter_avanzar(hash_iter_t *iter){
         if(!lista_iter_ver_actual(iter->iter_interno)){
             lista_iter_destruir(iter->iter_interno);
             size_t i;
-            for (i = iter->posicion_vector + 1; i < iter->hash->tam; i++){
+            for (i = iter->posicion_vector + 1; i < iter->hash->tamanio; i++){
                 if(lista_esta_vacia(iter->hash->vector[i])) continue;
-                iter->iter_interno = lista_iter_crear(hash->vector[i]);
+                iter->iter_interno = lista_iter_crear(iter->hash->vector[i]);
                 break;
             } 
             // Actualizo la posicion del vector
@@ -291,7 +299,7 @@ bool hash_iter_avanzar(hash_iter_t *iter){
 }
 
 const char *hash_iter_ver_actual(const hash_iter_t *iter){
-    if(hash_iter_esta_al_final(iter)) return NULL;
+    if(hash_iter_al_final(iter)) return NULL;
     return iter->clave_actual;
 }
 
