@@ -12,7 +12,7 @@
 #include <string.h>
 #include "hash.h"
 #include "lista.h"
-#define TAM_INI 4999
+#define TAM_INI 2000
 #define FACT_CAR 1
 #define FACT_AGR 2
 #define FACT_RED 4
@@ -40,15 +40,14 @@ struct hash
     hash_destruir_dato_t destruir_dato;
 };
 
-struct hash_iter{
+struct hash_iter
+{
     const hash_t *hash;
     size_t posicion_vector;
     size_t datos_pasados;
     lista_iter_t *iter_interno;
     char *clave_actual;
 };
-
-
 
 /*-----------------------------------------------------------------------------
  *  FUNCIONES AUXILIARES
@@ -120,11 +119,12 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
     // tabla de hash.
     hash_rehash(hash, hash_nuevo);
     hash_t *hash_viejo = hash;
-    hash = hash_nuevo;
+    memcpy(hash, hash_nuevo, sizeof(hash_t));
     hash_destruir(hash_viejo);
     
     return true;
 }
+
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO HASH
  *-----------------------------------------------------------------------------*/
@@ -151,24 +151,6 @@ static void nodo_destruir(nodo_hash_t *nodo_hash, void destruir_dato(void*))
     free(nodo_hash);
 }
 
-static nodo_hash_t *nodo_buscar(const hash_t *hash, const char *clave)
-{
-    size_t codigo = funcion_hash(hash, clave, strlen(clave));
-    if(lista_esta_vacia(hash->vector[codigo])) return NULL;
-
-    lista_iter_t *iter_lista = lista_iter_crear(hash->vector[codigo]);
-    while(!lista_iter_al_final(iter_lista))
-    {
-        nodo_hash_t *nodo_hash_actual = lista_iter_ver_actual(iter_lista);
-        if(!strcmp(nodo_hash_actual->clave, clave)){
-            lista_iter_destruir(iter_lista);
-            return nodo_hash_actual;
-        }
-        lista_iter_avanzar(iter_lista);
-    }
-    lista_iter_destruir(iter_lista);
-    return NULL;
-}
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL HASH
  *-----------------------------------------------------------------------------*/
@@ -191,8 +173,6 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
     hash->destruir_dato = destruir_dato;
     return hash;
 }
-
-
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 {
@@ -264,11 +244,21 @@ void *hash_borrar(hash_t *hash, const char *clave)
 
 void *hash_obtener(const hash_t *hash, const char *clave)
 {
-    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave);
-    if(!nodo_hash_buscado) return NULL;
+    size_t codigo = funcion_hash(hash, clave, strlen(clave));
+    if(lista_esta_vacia(hash->vector[codigo])) return NULL;
 
-    return nodo_hash_buscado->dato;
-
+    lista_iter_t *iter_lista = lista_iter_crear(hash->vector[codigo]);
+    while(!lista_iter_al_final(iter_lista))
+    {
+        nodo_hash_t *nodo_hash_actual = lista_iter_ver_actual(iter_lista);
+        if(!strcmp(nodo_hash_actual->clave, clave)){
+            lista_iter_destruir(iter_lista);
+            return nodo_hash_actual->dato;
+        }
+        lista_iter_avanzar(iter_lista);
+    }
+    lista_iter_destruir(iter_lista);
+    return NULL;
 }
 
 bool hash_pertenece(const hash_t *hash, const char *clave)
@@ -302,12 +292,12 @@ void hash_destruir(hash_t *hash)
     free(hash);
 }
 
-
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL ITERADOR
  *-----------------------------------------------------------------------------*/
 
-hash_iter_t *hash_iter_crear(const hash_t *hash){
+hash_iter_t *hash_iter_crear(const hash_t *hash)
+{
     //if(hash_cantidad(hash) == 0) return NULL;
     
     hash_iter_t *hash_iter = calloc(sizeof(hash_iter_t), 1);
@@ -315,7 +305,8 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
     hash_iter->hash = hash;
     size_t i;
     // Avanzo hasta la primera lista que contiene algún elemento
-    for(i = 0; i < hash->tamanio; i++){
+    for(i = 0; i < hash->tamanio; i++)
+    {
         if(lista_esta_vacia(hash->vector[i])) continue;
         hash_iter->iter_interno = lista_iter_crear(hash->vector[i]);
         nodo_hash_t *dic_actual = (nodo_hash_t*)lista_iter_ver_actual(hash_iter->iter_interno);
@@ -328,26 +319,30 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
     return hash_iter;
 }
 
-
-bool hash_iter_avanzar(hash_iter_t *iter){
+bool hash_iter_avanzar(hash_iter_t *iter)
+{
     if(hash_iter_al_final(iter)) return false;
     // Avanzo un lugar en la lista
     lista_iter_avanzar(iter->iter_interno);
     
     // Caso especial en caso de que antes de avanzar esté en el último nodo de la última lista
-    if(iter->datos_pasados == iter->hash->cantidad -1){
+    if(iter->datos_pasados == iter->hash->cantidad -1)
+    {
         iter->clave_actual = NULL;
     }
     // En cualquier otro caso
-    else{
+    else
+    {
         // Si el actual es NULL, se terminó la lista y tengo que ir a la siguiente que tenga
         // elementos.
         // También tengo que destruir el iterador interno y crear otro cuando encuentre una nueva
         // lista
-        if(!lista_iter_ver_actual(iter->iter_interno)){
+        if(!lista_iter_ver_actual(iter->iter_interno))
+        {
             lista_iter_destruir(iter->iter_interno);
             size_t i;
-            for (i = iter->posicion_vector + 1; i < iter->hash->tamanio; i++){
+            for (i = iter->posicion_vector + 1; i < iter->hash->tamanio; i++)
+            {
                 if(lista_esta_vacia(iter->hash->vector[i])) continue;
                 iter->iter_interno = lista_iter_crear(iter->hash->vector[i]);
                 break;
@@ -363,16 +358,19 @@ bool hash_iter_avanzar(hash_iter_t *iter){
     return true;
 }
 
-const char *hash_iter_ver_actual(const hash_iter_t *iter){
+const char *hash_iter_ver_actual(const hash_iter_t *iter)
+{
     if(hash_iter_al_final(iter)) return NULL;
     return iter->clave_actual;
 }
 
-bool hash_iter_al_final(const hash_iter_t *iter){
+bool hash_iter_al_final(const hash_iter_t *iter)
+{
     return (iter->datos_pasados == iter->hash->cantidad);
 }
 
-void hash_iter_destruir(hash_iter_t* iter){
+void hash_iter_destruir(hash_iter_t* iter)
+{
     lista_iter_destruir(iter->iter_interno);
     free(iter);
 }
