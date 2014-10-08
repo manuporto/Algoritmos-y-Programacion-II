@@ -1,17 +1,9 @@
 /*
  * =====================================================================================
- *
- *       Filename:  hash.c
- *
- *    Description:  Implementacion de la tabla de hash en C.
- *
- *        Version:  1.0
- *        Created:  06/10/14 02:00:48
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  YOUR NAME (), 
- *   Organization:  
+ *  Archivo:  hash.c
+ *  Descripcion:  Implementacion de la tabla de hash en C.
+ *  Autores: Porto Manuel Ignacio, Sueiro Ignacio Andres 
+ *  Padrones: 96587, 96817  
  *
  * =====================================================================================
  */
@@ -33,9 +25,9 @@
 
 // Definicion de el par clave/dato que ira en cada posicion de la lista
 // enlazada creada en cada posicion del vector.
-struct nodo_hash
+typedef struct nodo_hash
 {
-    const char *clave;
+    char *clave;
     void *dato;
 }nodo_hash_t;
 
@@ -45,8 +37,8 @@ struct hash
     size_t tamanio;
     size_t cantidad;
     // Revisar el tipo puede que sea hash_destruir_dato_t
-    void destruir_dato;
-}
+    hash_destruir_dato_t destruir_dato;
+};
 
 struct hash_iter{
     hash_t *hash;
@@ -65,7 +57,7 @@ struct hash_iter{
 // Funcion de hash basada en la K&R
 // Post: devuelve un entero que representa el indice del vector donde se 
 // guardaran la clave y el valor.
-static size_t funcion_hash(hash_t *hash, const char *clave, int largo)
+static size_t funcion_hash(const hash_t *hash, const char *clave, int largo)
 {
     size_t codigo = VAL_INI;
     for(size_t i = 0; i < largo; ++i)
@@ -81,13 +73,13 @@ static size_t funcion_hash(hash_t *hash, const char *clave, int largo)
 
 // Crea un nodo_hash.
 // Post: crea un nodo_hash con una clave y un dato.
-static nodo_hash_t *nodo_crear(const char *clave, void *dato)
+static nodo_hash_t *nodo_crear(char *clave, void *dato)
 {
     nodo_hash_t *nodo_hash = malloc(sizeof(nodo_hash_t));
     if(!nodo_hash) return NULL;
 
-    nodo_hash_t->clave = clave;
-    nodo_hash_t->dato = dato;
+    nodo_hash->clave = clave;
+    nodo_hash->dato = dato;
 
     return nodo_hash;
 }
@@ -97,11 +89,11 @@ static nodo_hash_t *nodo_crear(const char *clave, void *dato)
 static void nodo_destruir(nodo_hash_t *nodo_hash, void destruir_dato(void*))
 {
     free(nodo_hash->clave);
-    destruir_dato(nodo_hash->dato);
+    if(destruir_dato != NULL) destruir_dato(nodo_hash->dato);
     free(nodo_hash);
 }
 
-static nodo_hash_t *nodo_buscar(hash_t *hash, const char *clave)
+static nodo_hash_t *nodo_buscar(const hash_t *hash, const char *clave)
 {
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
     if(lista_esta_vacia(hash->vector[codigo])) return NULL;
@@ -144,7 +136,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 {
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
 
-    const char *clave_cpy = malloc(sizeof(char));
+    char *clave_cpy = malloc(sizeof(char));
     if(!clave_cpy) return false;
 
     nodo_hash_t *nodo_hash = nodo_crear(clave_cpy, dato);
@@ -154,44 +146,56 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
         return false;
     } 
 
+    hash->cantidad++;
     // Si la lista de la posicion esta vacia, estoy seguro de que no esta.
     if(lista_esta_vacia(hash->vector[codigo])) 
-        return lista_insertar_ultimo(nodo_hash); 
+        return lista_insertar_ultimo(hash->vector[codigo], nodo_hash); 
 
     // Si la lista no esta vacia es posible que ya este guardando otro dato
-    // con la misma clave. Hay que recorrer y  revisar.
-    // ESTE CODIGO ESTA REPETIDO, IMPLEMENTANDO EN OBTENER.[1]
+    // con la misma clave.
+    // Si no lo encontro, inserto el nuevo par a lo ultimo.
+    void *dato_rec = hash_borrar(hash, clave);
+    if(!dato_rec)
+        return lista_insertar_ultimo(hash->vector[codigo], nodo_hash);
+
+    // Si dato no es NULL, significa que existia un par y debo eliminar el
+    // dato para luego insertar el nuevo par.
+    hash->destruir_dato(dato_rec);
+    return lista_insertar_ultimo(hash->vector[codigo], nodo_hash);
+}
+
+void *hash_borrar(hash_t *hash, const char *clave)
+{
+    size_t codigo = funcion_hash(hash, clave, strlen(clave));
+    // Si la lista esta vacia no existe el par.
+    if(lista_esta_vacia(hash->vector[codigo])) return NULL;
+
+    // Si la lista contenia elementos debo verificar si esta o no el par.
     lista_iter_t *iter_lista = lista_iter_crear(hash->vector[codigo]);
     while(!lista_iter_al_final(iter_lista))
     {
         nodo_hash_t *nodo_hash_actual = lista_iter_ver_actual(iter_lista);
         if(!strcmp(nodo_hash_actual->clave, clave))
         {
-            nodo_hash_t *nodo_hash_viejo = 
+            nodo_hash_t *nodo_hash_viejo =
                 lista_borrar(hash->vector[codigo], iter_lista);
-            nodo_destruir(nodo_hash_viejo, hash->destruir_dato);
-
-            return lista_insertar(hash->vector[codigo], iter_lista, 
-                    nodo_hash_actual);
+            void *dato = nodo_hash_viejo->dato;
+            nodo_destruir(nodo_hash_viejo, NULL);
+            hash->cantidad--;
+            return dato;
         }
     }
 
-    // Si no lo encontro, inserto el nuevo par a lo ultimo.
-    return lista_insertar_ultimo(nodo_hash);
-}
-
-void *hash_borrar(hash_t *hash, const char *clave)
-{
-    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave, strlen(clave));
-    if(!nodo_hash_buscado) return NULL;
+    // Si no encontro nada devuelvo NULL.
+    return NULL;
 }
 
 void *hash_obtener(const hash_t *hash, const char *clave)
 {
-    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave, strlen(clave));
-    if(!nodo_buscado) return NULL;
+    nodo_hash_t *nodo_hash_buscado = nodo_buscar(hash, clave);
+    if(!nodo_hash_buscado) return NULL;
 
-    return nodo_buscado->dato;
+    return nodo_hash_buscado->dato;
 
 }
 
@@ -207,12 +211,22 @@ size_t hash_cantidad(const hash_t *hash)
 
 void hash_destruir(hash_t *hash)
 {
-    for(size_t i = 0; i <= hash->tamanio; i++) 
-        // Hay que cambiar esto para que borre los primeros elementos
-        // y que cada elemento que borra se lo destruya por separado
-        // con la funcion de destruir dato.
-        lista_destruir(hash->vector[i], hash->destruir_dato);
-    free(hash);
+    for(size_t i = 0; i <= hash->tamanio; i++)
+    {
+        if(lista_esta_vacia(hash->vector[i])) 
+        {
+            lista_destruir(hash->vector[i], NULL);
+            continue;
+        }
+
+        while(!lista_esta_vacia(hash->vector[i]))
+        {
+            nodo_hash_t *nodo_hash_actual = 
+                lista_borrar_primero(hash->vector[i]);
+            nodo_destruir(nodo_hash_actual, hash->destruir_dato);
+        }
+
+    }
 }
 
 
@@ -231,7 +245,7 @@ hash_iter_t *hash_iter_crear(const hash_t *hash){
     for(i = 0; i < hash->tam; i++){
         if(lista_esta_vacia(hash->vector[i])) continue;
         hash_iter->iter_interno = lista_iter_crear(hash->vector[i]);
-        diccionario_t *dic_actual = (diccionario_t*)lista_iter_ver_actual(hash_iter->iter_interno);
+        nodo_hash_t *dic_actual = (nodo_hash_t*)lista_iter_ver_actual(hash_iter->iter_interno);
         hash_iter->clave_actual = dic_actual->clave;
         break;
     }
@@ -269,7 +283,7 @@ bool hash_iter_avanzar(hash_iter_t *iter){
             iter->posicion_vector = i;
         }
     
-        diccionario_t *dic_actual = (diccionario_t*)lista_iter_ver_actual(iter->iter_interno);
+        nodo_hash_t *dic_actual = (nodo_hash_t*)lista_iter_ver_actual(iter->iter_interno);
         iter->clave_actual = dic_actual->clave;
     }
     iter->datos_pasados += 1;

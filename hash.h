@@ -37,7 +37,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato);
 // Borra un elemento de la tabla de hash.
 // Pre: la tabla de hash fue creada.
 // Post: devuelve un puntero a void con el dato correspondiente a la clave
-// y borra la clave con su dato. Devuelve un puntero a NULL si esta no existe.
+// y borra la clave. Devuelve un puntero a NULL si esta no existe.
 void *hash_borrar(hash_t *hash, const char *clave);
 
 // Obtiene el dato correspondiente a la clave recibida por parametro.
