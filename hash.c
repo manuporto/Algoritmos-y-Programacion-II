@@ -4,7 +4,6 @@
  *  Descripcion:  Implementacion de la tabla de hash en C.
  *  Autores: Porto Manuel Ignacio, Sueiro Ignacio Andres 
  *  Padrones: 96587, 96817  
- *
  * =====================================================================================
  */
 
@@ -13,7 +12,8 @@
 #include <string.h>
 #include "hash.h"
 #include "lista.h"
-#define TAM_INI 10000
+#define TAM_INI 4999
+#define FACT_CAR 1
 #define FACT_AGR 2
 #define FACT_RED 4
 #define VAL_INI 0
@@ -65,8 +65,66 @@ static size_t funcion_hash(const hash_t *hash, const char *clave, int largo)
     return codigo % hash->tamanio;
 }
 
-// Falta redimensionar.
+// Devuelve el factor de carga de una tabla de hash.
+// Pre: la tabla de hash fue creada.
+// Post: devuelve un float que representa el factor de carga del hash.
+static float hash_factor_de_carga(const hash_t *hash)
+{
+    return hash->cantidad/hash->tamanio;
+}
 
+// Reubica todos los pares presentes de un hash en uno nuevo. No modifica
+// el hash original.
+// Pre: tanto hash_viejo como hash_nuevo fueron creados.
+static void hash_rehash(const hash_t *hash_viejo, hash_t *hash_nuevo)
+{
+    hash_iter_t *iter_hash_v = hash_iter_crear(hash_viejo);
+
+    while(!hash_iter_al_final(iter_hash_v))
+    {
+        // Obtengo la informacion de cada par del hash_viejo.
+        const char *clave_act = hash_iter_ver_actual(iter_hash_v);
+        void *dato_act = hash_obtener(hash_viejo, clave_act);
+
+        // Guardo la informacion obtenida en el hash_nuevo.
+        hash_guardar(hash_nuevo, clave_act, dato_act);
+
+        hash_iter_avanzar(iter_hash_v);
+    }
+    hash_iter_destruir(iter_hash_v);
+}
+
+// Redimensiona el vector de hash.
+// Pre: el hash fue creado.
+// Post: el vector de hash es redimensionado y sus claves vuelven a pasar
+// por la funcion de hash para reubicarse.
+static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
+{
+    hash_t *hash_nuevo = calloc(sizeof(hash_t), 1);
+    if(!hash_nuevo) return false;
+
+    hash_nuevo->vector = malloc(sizeof(void*) * tam_nuevo);
+    if(!hash_nuevo->vector)
+    {
+        free(hash_nuevo);
+        return false;
+    } 
+    
+    hash_nuevo->tamanio = tam_nuevo;
+    hash_nuevo->cantidad = 0;
+  
+    for(size_t i = 0; i < tam_nuevo; i++) 
+        hash_nuevo->vector[i] = lista_crear();
+
+     // Llamo a hash_rehash para que reubique todas las claves en la nueva
+    // tabla de hash.
+    hash_rehash(hash, hash_nuevo);
+    hash_t *hash_viejo = hash;
+    hash = hash_nuevo;
+    hash_destruir(hash_viejo);
+    
+    return true;
+}
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO HASH
  *-----------------------------------------------------------------------------*/
@@ -120,8 +178,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
     hash_t *hash = malloc(sizeof(hash_t));
     if(!hash) return NULL;
 
-    // Revisar! Puede que ese +1 este de mas.
-    hash->vector = malloc(sizeof(void*)*TAM_INI);
+    hash->vector = malloc(sizeof(void*) * TAM_INI);
     if(!hash->vector)
     {
         free(hash);
@@ -131,13 +188,21 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
     hash->tamanio = TAM_INI;
     hash->cantidad = 0;
     for(size_t i = 0; i < TAM_INI; i++) hash->vector[i] = lista_crear();
-    // Revisar
     hash->destruir_dato = destruir_dato;
     return hash;
 }
 
+
+
 bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 {
+    if(hash_factor_de_carga(hash) == FACT_CAR)
+    {
+        size_t tam_nuevo = hash->tamanio * FACT_AGR;
+        if(!hash_redimensionar(hash, tam_nuevo)) 
+            return false;    
+    }
+    
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
 
     char *clave_cpy = malloc(sizeof(char)*strlen(clave) + 1);
@@ -158,7 +223,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 
     // Si la lista no esta vacia es posible que ya este guardando otro dato
     // con la misma clave.
-    // Si no lo encontro, inserto el nuevo par a lo ultimo.
+    // Si no lo encuentro, inserto el nuevo par a lo ultimo.
     void *dato_rec = hash_borrar(hash, clave);
     if(!dato_rec)
         return lista_insertar_ultimo(hash->vector[codigo], nodo_hash);
@@ -245,7 +310,7 @@ void hash_destruir(hash_t *hash)
 hash_iter_t *hash_iter_crear(const hash_t *hash){
     //if(hash_cantidad(hash) == 0) return NULL;
     
-    hash_iter_t *hash_iter = malloc(sizeof(hash_iter_t));
+    hash_iter_t *hash_iter = calloc(sizeof(hash_iter_t), 1);
     if(!hash_iter) return NULL;
     hash_iter->hash = hash;
     size_t i;
