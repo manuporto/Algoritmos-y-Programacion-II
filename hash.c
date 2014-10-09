@@ -12,7 +12,7 @@
 #include <string.h>
 #include "hash.h"
 #include "lista.h"
-#define TAM_INI 2000
+#define TAM_INI 3000
 #define FACT_CAR 1
 #define FACT_AGR 2
 #define FACT_RED 4
@@ -99,7 +99,7 @@ static void hash_rehash(const hash_t *hash_viejo, hash_t *hash_nuevo)
 // por la funcion de hash para reubicarse.
 static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
 {
-    hash_t *hash_nuevo = calloc(sizeof(hash_t), 1);
+    hash_t *hash_nuevo = malloc(sizeof(hash_t));
     if(!hash_nuevo) return false;
 
     hash_nuevo->vector = malloc(sizeof(void*) * tam_nuevo);
@@ -111,6 +111,7 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
     
     hash_nuevo->tamanio = tam_nuevo;
     hash_nuevo->cantidad = 0;
+    hash_nuevo->destruir_dato = hash->destruir_dato;
   
     for(size_t i = 0; i < tam_nuevo; i++) 
         hash_nuevo->vector[i] = lista_crear();
@@ -127,14 +128,10 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
                 lista_borrar_primero(hash->vector[i]);
             nodo_destruir(nodo_hash_actual, NULL);
         }
-        if(lista_esta_vacia(hash->vector[i])) 
-        {
-            lista_destruir(hash->vector[i], NULL);
-            continue;
-        }
-
+        lista_destruir(hash->vector[i], NULL);
     }
-    hash_t *hash_viejo = hash;
+    free(hash->vector);
+    //hash_t *hash_viejo = hash;
     hash = memcpy(hash, hash_nuevo, sizeof(hash_t));
     //hash_destruir(hash_viejo);
     
@@ -198,7 +195,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato)
         if(!hash_redimensionar(hash, tam_nuevo)) 
             return false;    
     }
-    
+    //
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
 
     char *clave_cpy = malloc(sizeof(char)*strlen(clave) + 1);
@@ -297,12 +294,7 @@ void hash_destruir(hash_t *hash)
                 lista_borrar_primero(hash->vector[i]);
             nodo_destruir(nodo_hash_actual, hash->destruir_dato);
         }
-        if(lista_esta_vacia(hash->vector[i])) 
-        {
-            lista_destruir(hash->vector[i], NULL);
-            continue;
-        }
-
+        lista_destruir(hash->vector[i], NULL);
     }
     free(hash->vector);
     free(hash);
