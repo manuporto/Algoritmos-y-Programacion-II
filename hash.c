@@ -53,6 +53,7 @@ struct hash_iter
  *  FUNCIONES AUXILIARES
  *-----------------------------------------------------------------------------*/
 
+static void nodo_destruir(nodo_hash_t *nodo_hash, void destruir_dato(void*));
 // Funcion de hash basada en la K&R
 // Post: devuelve un entero que representa el indice del vector donde se 
 // guardaran la clave y el valor.
@@ -87,7 +88,6 @@ static void hash_rehash(const hash_t *hash_viejo, hash_t *hash_nuevo)
 
         // Guardo la informacion obtenida en el hash_nuevo.
         hash_guardar(hash_nuevo, clave_act, dato_act);
-
         hash_iter_avanzar(iter_hash_v);
     }
     hash_iter_destruir(iter_hash_v);
@@ -118,9 +118,25 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
      // Llamo a hash_rehash para que reubique todas las claves en la nueva
     // tabla de hash.
     hash_rehash(hash, hash_nuevo);
+
+    for(size_t i = 0; i < hash->tamanio; i++)
+    {
+        while(!lista_esta_vacia(hash->vector[i]))
+        {
+            nodo_hash_t *nodo_hash_actual = 
+                lista_borrar_primero(hash->vector[i]);
+            nodo_destruir(nodo_hash_actual, NULL);
+        }
+        if(lista_esta_vacia(hash->vector[i])) 
+        {
+            lista_destruir(hash->vector[i], NULL);
+            continue;
+        }
+
+    }
     hash_t *hash_viejo = hash;
-    memcpy(hash, hash_nuevo, sizeof(hash_t));
-    hash_destruir(hash_viejo);
+    hash = memcpy(hash, hash_nuevo, sizeof(hash_t));
+    //hash_destruir(hash_viejo);
     
     return true;
 }
