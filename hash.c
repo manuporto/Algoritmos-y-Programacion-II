@@ -134,6 +134,7 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
     //hash_t *hash_viejo = hash;
     hash = memcpy(hash, hash_nuevo, sizeof(hash_t));
     //hash_destruir(hash_viejo);
+    free(hash_nuevo);
     
     return true;
 }
