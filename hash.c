@@ -13,9 +13,9 @@
 #include "hash.h"
 #include "lista.h"
 #define TAM_INI 3000
-#define FACT_CAR 1
+#define FACT_CAR 2
 #define FACT_AGR 2
-#define FACT_RED 4
+#define FACT_RED 3
 #define VAL_INI 0
 #define M 31
 
@@ -36,7 +36,6 @@ struct hash
     void** vector;
     size_t tamanio;
     size_t cantidad;
-    // Revisar el tipo puede que sea hash_destruir_dato_t
     hash_destruir_dato_t destruir_dato;
 };
 
@@ -131,9 +130,7 @@ static bool hash_redimensionar(hash_t *hash, size_t tam_nuevo)
         lista_destruir(hash->vector[i], NULL);
     }
     free(hash->vector);
-    //hash_t *hash_viejo = hash;
     hash = memcpy(hash, hash_nuevo, sizeof(hash_t));
-    //hash_destruir(hash_viejo);
     free(hash_nuevo);
     
     return true;
@@ -190,13 +187,18 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato)
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato)
 {
-    if(hash_factor_de_carga(hash) == FACT_CAR)
+    if(hash_factor_de_carga(hash) >= FACT_CAR)
     {
         size_t tam_nuevo = hash->tamanio * FACT_AGR;
         if(!hash_redimensionar(hash, tam_nuevo)) 
             return false;    
+    }else if(hash_factor_de_carga(hash) < FACT_CAR/4)
+    {
+        size_t tam_nuevo = hash->tamanio /  FACT_RED;
+        if(!hash_redimensionar(hash, tam_nuevo))
+            return false;
     }
-    //
+    
     size_t codigo = funcion_hash(hash, clave, strlen(clave));
 
     char *clave_cpy = malloc(sizeof(char)*strlen(clave) + 1);
@@ -307,8 +309,6 @@ void hash_destruir(hash_t *hash)
 
 hash_iter_t *hash_iter_crear(const hash_t *hash)
 {
-    //if(hash_cantidad(hash) == 0) return NULL;
-    
     hash_iter_t *hash_iter = calloc(sizeof(hash_iter_t), 1);
     if(!hash_iter) return NULL;
     hash_iter->hash = hash;
