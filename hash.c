@@ -313,7 +313,7 @@ hash_iter_t *hash_iter_crear(const hash_t *hash)
     if(!hash_iter) return NULL;
     hash_iter->hash = hash;
     size_t i;
-    // Avanzo hasta la primera lista que contiene algún elemento
+    // Avanzo hasta la primera lista que contiene algun elemento
     for(i = 0; i < hash->tamanio; i++)
     {
         if(lista_esta_vacia(hash->vector[i])) continue;
@@ -322,7 +322,7 @@ hash_iter_t *hash_iter_crear(const hash_t *hash)
         hash_iter->clave_actual = dic_actual->clave;
         break;
     }
-    // Guardo el lugar del vector donde me quedé e inicializo en cero la cantidad de datos que pasé
+    // Guardo el lugar del vector donde me quede e inicializo en cero la cantidad de datos que pase
     hash_iter->posicion_vector = i;
     hash_iter->datos_pasados = 0;
     return hash_iter;
@@ -334,7 +334,7 @@ bool hash_iter_avanzar(hash_iter_t *iter)
     // Avanzo un lugar en la lista
     lista_iter_avanzar(iter->iter_interno);
     
-    // Caso especial en caso de que antes de avanzar esté en el último nodo de la última lista
+    // Caso especial en caso de que antes de avanzar este en el ultimo nodo de la ultima lista
     if(iter->datos_pasados == iter->hash->cantidad -1)
     {
         iter->clave_actual = NULL;
@@ -342,9 +342,9 @@ bool hash_iter_avanzar(hash_iter_t *iter)
     // En cualquier otro caso
     else
     {
-        // Si el actual es NULL, se terminó la lista y tengo que ir a la siguiente que tenga
+        // Si el actual es NULL, se termino la lista y tengo que ir a la siguiente que tenga
         // elementos.
-        // También tengo que destruir el iterador interno y crear otro cuando encuentre una nueva
+        // Tambien tengo que destruir el iterador interno y crear otro cuando encuentre una nueva
         // lista
         if(!lista_iter_ver_actual(iter->iter_interno))
         {
