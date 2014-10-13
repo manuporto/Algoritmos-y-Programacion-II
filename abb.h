@@ -42,20 +42,39 @@ void abb_destruir(abb_t *arbol);
  *  PRIMITIVA DEL ITERADOR INTERNO
  *-----------------------------------------------------------------------------*/
 
+// Itera un arbol binario de forma "inorder".
+// Pre: el abb fue creado, la primitiva recibe una funcion de callback 
+// "visitar" que devuelve true si se debe seguir iterando o false en caso
+// contrario.
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL ITERADOR EXTERNO
  *-----------------------------------------------------------------------------*/
 
+// Crea un iterador de abb.
+// Pre: el arbol fue creado.
+// Post: devuelve un iterador en la posicion inicial.
 abb_iter_t *abb_iter_in_crear(const abb_t *arbol);
 
+// Avanza un nodo del abb.
+// Pre: el iterador fue creado.
+// Post: devuelve true si pudo avanzar, false en caso contrario.
 bool abb_iter_in_avanzar(abb_iter_t *iter);
 
+// Pre: el iterador fue creado.
+// Post: devuelve la clave correspondiente a la posicion actual
+// del iterador.
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter);
 
+// Informa si se esta o no al final del abb.
+// Pre: el iterador fue creado.
+// Post: devuelve true si se esta al final del abb, y false en caso 
+// contrario.
 bool abb_iter_in_al_final(const abb_iter_t *iter);
 
+// Destruye el iterador.
+// Pre: el iterador fue creado.
 void abb_iter_in_destruir(abb_iter_t* iter);
 
 
