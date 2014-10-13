@@ -1,0 +1,61 @@
+/*
+ * =====================================================================================
+ *  Archivo:  abb.h
+ *  Descripcion: Archivo de cabecera de el abb.  
+ *  Autores: Sueiro Ignacio Andres, Porto Manuel Ignacio 
+ *  Padrones: 96817, 96587
+ * =====================================================================================
+ */
+
+
+/*-----------------------------------------------------------------------------
+ *  DEFINICION DE ESTRUCTURAS
+ *-----------------------------------------------------------------------------*/
+
+typedef struct abb abb_t;
+
+typedef int (*abb_comparar_clave_t) (const char *, const char *);
+
+typedef void (*abb_destruir_dato_t) (void *);
+
+typedef struct abb_iter abb_iter_t;
+
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVAS DEL ABB
+ *-----------------------------------------------------------------------------*/
+
+abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato);
+
+bool abb_guardar(abb_t *arbol, const char *clave, void *dato);
+
+void *abb_borrar(abb_t *arbol, const char *clave);
+
+void *abb_obtener(const abb_t *arbol, const char *clave);
+
+bool abb_pertenece(const abb_t *arbol, const char *clave);
+
+size_t abb_cantidad(abb_t *arbol);
+
+void abb_destruir(abb_t *arbol);
+
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVA DEL ITERADOR INTERNO
+ *-----------------------------------------------------------------------------*/
+
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVAS DEL ITERADOR EXTERNO
+ *-----------------------------------------------------------------------------*/
+
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol);
+
+bool abb_iter_in_avanzar(abb_iter_t *iter);
+
+const char *abb_iter_in_ver_actual(const abb_iter_t *iter);
+
+bool abb_iter_in_al_final(const abb_iter_t *iter);
+
+void abb_iter_in_destruir(abb_iter_t* iter);
+
+
