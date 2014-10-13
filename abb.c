@@ -20,16 +20,19 @@ struct abb{
 	abb_destruir_dato_t destruir_dato;
 };
 
-<<<<<<< HEAD
 typedef struct nodo_abb{
-=======
-typedef nodo_abb{
 	char *clave;
 	void *dato;
->>>>>>> e413603b38f9631051a582143d40c02cbf03d024
 	struct nodo_abb_t *izq;
 	struct nodo_abb_t *der;
 } nodo_abb_t;
+
+typedef struct abb_iter
+{
+    abb_t *arbol;
+    pila_t *pila;
+    nodo_abb_t *actual;
+}abb_iter_t;
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO ABB
@@ -130,13 +133,7 @@ bool abb_pertenece(const abb_t *arbol, const char *clave){
 	return true;
 }
 
-<<<<<<< HEAD
-typedef struct abb_iter
-{
-    abb_t *arbol;
-    pila_t *pila;
-    nodo_abb_t *actual;
-}abb_iter_t;
+
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVA DEL ITERADOR INTERNO
@@ -182,8 +179,4 @@ void abb_iter_in_destruir(abb_iter_t* iter)
 {
     pila_destruir(abb_iter->pila);
     free(iter);
-=======
-size_t abb_cantidad(abb_t *arbol){
-	return arbol->cantidad;
->>>>>>> e413603b38f9631051a582143d40c02cbf03d024
 }
