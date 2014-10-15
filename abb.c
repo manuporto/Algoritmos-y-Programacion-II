@@ -6,12 +6,22 @@
  *  Padrones: 96587, 96817  
  * =====================================================================================
  */
-
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include "abb.h"
+#include "pila.h"
 
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
  *-----------------------------------------------------------------------------
  */
+typedef struct nodo_abb{
+	char *clave;
+	void *dato;
+	struct nodo_abb_t *izq;
+	struct nodo_abb_t *der;
+} nodo_abb_t;
 
 struct abb{
 	nodo_abb_t *raiz;
@@ -20,18 +30,11 @@ struct abb{
 	abb_destruir_dato_t destruir_dato;
 };
 
-typedef struct nodo_abb{
-	char *clave;
-	void *dato;
-	struct nodo_abb_t *izq;
-	struct nodo_abb_t *der;
-} nodo_abb_t;
-
-typedef struct abb_iter
+struct abb_iter
 {
     abb_t *arbol;
     pila_t *pila;
-}abb_iter_t;
+}
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO ABB
@@ -39,7 +42,7 @@ typedef struct abb_iter
 
 // Crea un nodo_abb.
 // Post: crea un nodo_abb con una clave y un dato.
-static nodo_abb_t *nodo_crear(char *clave, void *dato){
+static nodo_abb_t *nodo_crear(const char *clave, void *dato){
     nodo_abb_t *nodo_abb = malloc(sizeof(nodo_abb_t));
     if(!nodo_abb) return NULL;
     
@@ -49,7 +52,7 @@ static nodo_abb_t *nodo_crear(char *clave, void *dato){
     	return NULL;
     }
     
-    strcpy(clave_copia, clave)
+    strcpy(clave_copia, clave);
     nodo_abb->clave = clave_copia;
     nodo_abb->dato = dato;
     nodo_abb->izq = NULL;
@@ -100,7 +103,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 		if(cmp == 0){
 			//Significa que encontré un nodo con la misma clave. Hay que reempla
 			//zarlo
-			void *aux = nodo_actual->dato
+			void *aux = nodo_actual->dato;
 			nodo_actual->dato = nodo_nuevo->dato;
 			arbol->destruir_dato(aux);
 			//Destruyo el nodo nuevo porque "reciclo" el nodo viejo, cambiandole
@@ -117,7 +120,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 }
 
 void *abb_obtener(const abb_t *arbol, const char *clave){
-	nodo_abb_t nodo_actual = arbol->raiz;
+	nodo_abb_t *nodo_actual = arbol->raiz;
 	while(nodo_actual){
 		int cmp = arbol->comparar(clave, nodo_actual->clave);
 		if(cmp > 0) nodo_actual = nodo_actual->der;
@@ -156,10 +159,10 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 			if(!nodo_actual->izq && !nodo_actual->der) 
 				nodo_destruir(nodo_actual, NULL);
 			// Caso B: tiene un solo hijo
-			else if((!nodo_actual->izq || !nodo_actual->der){
-				nodo_abb_t *aux = nodo_actual
+			else if(!nodo_actual->izq || !nodo_actual->der){
+				nodo_abb_t *aux = nodo_actual;
 				if(!nodo_actual->izq) nodo_actual = nodo_actual->der;
-				else nodo_actual = nodo_actual->izq
+				else nodo_actual = nodo_actual->izq;
 				nodo_destruir(aux, NULL);
 			}
 			// Caso C: tiene dos hijos
@@ -175,7 +178,7 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 		}
 	}
 	// La clave no está
-	return NULL
+	return NULL;
 }
 
 
@@ -219,15 +222,16 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol)
     }
     nodo_abb_t *nodo_actual = arbol->raiz;
     while(nodo_actual){
-    	pila_apilar(abb_iter->pila);
+    	pila_apilar(abb_iter->pila, nodo_actual);
     	nodo_actual = nodo_actual->izq;
     }
     abb_iter->arbol = arbol;
+    return abb_iter;
 
 }
 bool abb_iter_in_avanzar(abb_iter_t *iter)
 {
-    if(abb_iter_in_al_final) return false;
+    if(abb_iter_in_al_final(iter)) return false;
     nodo_abb_t *nodo_actual = pila_desapilar(iter->pila);
     if(nodo_actual->der){
     	pila_apilar(iter->pila, nodo_actual->der);
@@ -254,6 +258,6 @@ bool abb_iter_in_al_final(const abb_iter_t *iter)
 
 void abb_iter_in_destruir(abb_iter_t* iter)
 {
-    pila_destruir(abb_iter->pila);
+    pila_destruir(iter->pila);
     free(iter);
 }
