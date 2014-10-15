@@ -19,8 +19,8 @@
 typedef struct nodo_abb{
 	char *clave;
 	void *dato;
-	struct nodo_abb_t *izq;
-	struct nodo_abb_t *der;
+	struct nodo_abb *izq;
+	struct nodo_abb *der;
 } nodo_abb_t;
 
 struct abb{
@@ -34,7 +34,7 @@ struct abb_iter
 {
     abb_t *arbol;
     pila_t *pila;
-}
+};
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO ABB
