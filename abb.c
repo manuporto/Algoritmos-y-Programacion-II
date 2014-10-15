@@ -139,7 +139,7 @@ bool abb_pertenece(const abb_t *arbol, const char *clave){
 void abb_destruir(abb_t *arbol){
 	abb_iter_t *iter = abb_iter_in_crear(arbol);
 	while(!abb_iter_in_al_final(iter)){
-		nodo_abb_t *nodo = abb_iter_in_ver_actual(iter);
+		nodo_abb_t *nodo = pila_ver_tope(iter->pila);
 		abb_iter_in_avanzar(iter);
 		nodo_destruir(nodo, arbol->destruir_dato);
 	}
