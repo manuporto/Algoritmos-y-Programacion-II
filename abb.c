@@ -169,12 +169,12 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol)
 bool abb_iter_in_avanzar(abb_iter_t *iter)
 {
     if(abb_iter_in_al_final) return false;
-    nodo_abb_t *nodo_actual = pila_desapilar(abb_iter->pila);
+    nodo_abb_t *nodo_actual = pila_desapilar(iter->pila);
     if(nodo_actual->der){
-    	pila_apilar(abb_iter->pila, nodo_actual->der);
+    	pila_apilar(iter->pila, nodo_actual->der);
     	nodo_actual = nodo_actual->izq;
     	while(nodo_actual) {
-    		pila_apilar(abb_iter->pila, nodo_actual);
+    		pila_apilar(iter->pila, nodo_actual);
     		nodo_actual = nodo_actual->izq;
     	}
     }
@@ -183,14 +183,14 @@ bool abb_iter_in_avanzar(abb_iter_t *iter)
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter)
 {
+    if(abb_iter_in_al_final(iter)) return NULL;
 	nodo_abb_t *nodo_actual = pila_ver_tope(iter->pila);
-    if(!nodo_actual) return NULL;
     return nodo_actual->clave;
 }
 
 bool abb_iter_in_al_final(const abb_iter_t *iter)
 {
-    return !abb_iter_in_ver_actual(iter);
+    return pila_esta_vacia(iter->pila);
 }
 
 void abb_iter_in_destruir(abb_iter_t* iter)
