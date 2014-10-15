@@ -41,7 +41,7 @@ typedef struct abb_iter
 // Post: crea un nodo_abb con una clave y un dato.
 static nodo_abb_t *nodo_crear(char *clave, void *dato){
     nodo_abb_t *nodo_abb = malloc(sizeof(nodo_abb_t));
-    if(!nodo_hash) return NULL;
+    if(!nodo_abb) return NULL;
     
     char *clave_copia = malloc(sizeof(char)*strlen(clave)+1);
     if(!clave_copia){
@@ -55,16 +55,16 @@ static nodo_abb_t *nodo_crear(char *clave, void *dato){
     nodo_abb->izq = NULL;
     nodo_abb->der = NULL;
 
-    return nodo_hash;
+    return nodo_abb;
 }
 
 // Destruye el par clave-dato.
 // Pre: el nodo fue creado.
 static void nodo_destruir(nodo_abb_t *nodo_abb, void destruir_dato(void*))
 {
-    free(nodo_hash->clave);
-    if(destruir_dato) destruir_dato(nodo_hash->dato);
-    free(nodo_hash);
+    free(nodo_abb->clave);
+    if(destruir_dato) destruir_dato(nodo_abb->dato);
+    free(nodo_abb);
 }
 
 /*-----------------------------------------------------------------------------
@@ -134,8 +134,50 @@ bool abb_pertenece(const abb_t *arbol, const char *clave){
 }
 
 void abb_destruir(abb_t *arbol){
-
+	abb_iter_t *iter = abb_iter_in_crear(arbol);
+	while(!abb_iter_in_al_final(iter)){
+		nodo_abb_t *nodo = abb_iter_in_ver_actual(iter);
+		abb_iter_in_avanzar(iter);
+		nodo_destruir(nodo, arbol->destruir_dato);
+	}
 }
+
+void *abb_borrar(abb_t *arbol, const char *clave){
+	nodo_abb_t *nodo_actual = arbol->raiz;
+	while(nodo_actual){
+		int cmp = arbol->comparar(clave, nodo_actual->clave);
+		// La clave es mas grande que la actual. Avanzo a la derecha
+		if(cmp > 0) nodo_actual = nodo_actual->der;
+		// La clave es mas chica que la actual. Avanzo a la izquierda
+		if(cmp < 0) nodo_actual = nodo_actual->izq;
+		if(cmp == 0){
+			// Caso A: no tiene hijos
+			void *devolucion = nodo_actual->dato;
+			if(!nodo_actual->izq && !nodo_actual->der) 
+				nodo_destruir(nodo_actual, NULL);
+			// Caso B: tiene un solo hijo
+			else if((!nodo_actual->izq || !nodo_actual->der){
+				nodo_abb_t *aux = nodo_actual
+				if(!nodo_actual->izq) nodo_actual = nodo_actual->der;
+				else nodo_actual = nodo_actual->izq
+				nodo_destruir(aux, NULL);
+			}
+			// Caso C: tiene dos hijos
+			else{
+				nodo_abb_t *aux = nodo_actual;
+				nodo_abb_t *heredero = nodo_actual->der;
+				while(heredero->izq) heredero = heredero->izq;
+				nodo_actual = heredero;
+				heredero = heredero->der;
+				nodo_destruir(aux, NULL);
+			}
+			return devolucion;
+		}
+	}
+	// La clave no está
+	return NULL
+}
+
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVA DEL ITERADOR INTERNO
