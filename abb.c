@@ -183,7 +183,24 @@ void *abb_borrar(abb_t *arbol, const char *clave){
  *  PRIMITIVA DEL ITERADOR INTERNO
  *-----------------------------------------------------------------------------*/
 
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra)
+{
+    abb_iter_t *abb_iter = abb_iter_in_crear(arbol);
+    nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
+    const char *clave = abb_iter_in_ver_actual(abb_iter);
+    void *dato = nodo_actual->dato;
+    bool seguir = visitar(clave, dato, extra);
+    while(!abb_iter_in_al_final(abb_iter) && seguir)
+    {
+        abb_iter_in_avanzar(abb_iter);
+        nodo_actual = pila_ver_tope(abb_iter->pila);
+        clave = abb_iter_in_ver_actual(abb_iter);
+        dato = nodo_actual->dato;
+        seguir = visitar(clave, dato, extra);
+    }
+
+    abb_iter_in_destruir(abb_iter);
+}
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL ITERADOR EXTERNO
