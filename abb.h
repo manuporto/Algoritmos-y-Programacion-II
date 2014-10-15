@@ -34,6 +34,9 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato);
 // Post: devuelve true si todo OK, false en caso de error.
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato);
 
+// Pre: el árbol fue creado
+// Post: devuelve el dato asociado a la clave que quiere borrarse. Borra el nodo
+// del arbol
 void *abb_borrar(abb_t *arbol, const char *clave);
 
 // Pre: el árbol fue creado
@@ -46,8 +49,12 @@ void *abb_obtener(const abb_t *arbol, const char *clave);
 // árbol, false en caso contrario
 bool abb_pertenece(const abb_t *arbol, const char *clave);
 
+// Pre: e árbol fue creado.
+// Post: devuelve la cantidad de nodos del árbol
 size_t abb_cantidad(abb_t *arbol);
 
+// Pre: el arbol fue creado
+// Post: borra todos los datos que hay en el árbol y libera la memoria
 void abb_destruir(abb_t *arbol);
 
 /*-----------------------------------------------------------------------------
