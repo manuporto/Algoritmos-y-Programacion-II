@@ -31,15 +31,14 @@ typedef struct abb_iter
 {
     abb_t *arbol;
     pila_t *pila;
-    nodo_abb_t *actual;
 }abb_iter_t;
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE NODO ABB
  *-----------------------------------------------------------------------------*/
 
-// Crea un nodo_hash.
-// Post: crea un nodo_hash con una clave y un dato.
+// Crea un nodo_abb.
+// Post: crea un nodo_abb con una clave y un dato.
 static nodo_abb_t *nodo_crear(char *clave, void *dato){
     nodo_abb_t *nodo_abb = malloc(sizeof(nodo_abb_t));
     if(!nodo_hash) return NULL;
@@ -101,10 +100,11 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 		if(cmp == 0){
 			//Significa que encontré un nodo con la misma clave. Hay que reempla
 			//zarlo
-			
-			//Que hago con el dato cuando lo tengo que reemplazar. Lo destruyo
-			// o dejo que el usuario se encargue?
+			void *aux = nodo_actual->dato
 			nodo_actual->dato = nodo_nuevo->dato;
+			arbol->destruir_dato(aux);
+			//Destruyo el nodo nuevo porque "reciclo" el nodo viejo, cambiandole
+			//el dato
 			nodo_destruir(nodo_nuevo, NULL);
 			return true;
 		}
@@ -133,7 +133,9 @@ bool abb_pertenece(const abb_t *arbol, const char *clave){
 	return true;
 }
 
+void abb_destruir(abb_t *arbol){
 
+}
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVA DEL ITERADOR INTERNO
@@ -156,18 +158,34 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol)
         free(abb_iter);
         return NULL;
     }
+    nodo_abb_t *nodo_actual = arbol->raiz;
+    while(nodo_actual){
+    	pila_apilar(abb_iter->pila);
+    	nodo_actual = nodo_actual->izq;
+    }
     abb_iter->arbol = arbol;
 
 }
 bool abb_iter_in_avanzar(abb_iter_t *iter)
 {
     if(abb_iter_in_al_final) return false;
+    nodo_abb_t *nodo_actual = pila_desapilar(abb_iter->pila);
+    if(nodo_actual->der){
+    	pila_apilar(abb_iter->pila, nodo_actual->der);
+    	nodo_actual = nodo_actual->izq;
+    	while(nodo_actual) {
+    		pila_apilar(abb_iter->pila, nodo_actual);
+    		nodo_actual = nodo_actual->izq;
+    	}
+    }
+    return true;
 }
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter)
 {
-    if(!iter->actual) return NULL;
-    return iter->actual->clave;
+	nodo_abb_t *nodo_actual = pila_ver_tope(iter->pila);
+    if(!nodo_actual) return NULL;
+    return nodo_actual->clave;
 }
 
 bool abb_iter_in_al_final(const abb_iter_t *iter)
