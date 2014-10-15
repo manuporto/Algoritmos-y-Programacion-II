@@ -32,7 +32,7 @@ struct abb{
 
 struct abb_iter
 {
-    abb_t *arbol;
+    const abb_t *arbol;
     pila_t *pila;
 };
 
