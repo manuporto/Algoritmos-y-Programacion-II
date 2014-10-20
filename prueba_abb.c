@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-//#include <time.h>
 #include "abb.h"
 
 /*-----------------------------------------------------------------------------
@@ -24,6 +23,13 @@ static void print_test(char* name, bool result)
 	printf("%s: %s\n", name, result? "OK" : "ERROR");
 }
 
+/* Imprimir todos los elementos de un arbol. */
+bool imprimir_elementos(const char *clave, void *valor, void *extra)
+{
+   strcat(extra, clave);
+   strcat(extra, ",");
+   return true;
+}
 /*-----------------------------------------------------------------------------
  *  PRUEBAS UNITARIAS
  *-----------------------------------------------------------------------------*/
@@ -404,6 +410,22 @@ void prueba_abb_iterar_volumen(size_t largo)
 	abb_iter_in_destruir(iter);
 	abb_destruir(abb);
 }
+
+void prueba_abb_iterador_interno()
+{
+    abb_t *abb = abb_crear(strcmp, NULL);
+	char *claves[] = {"F", "B", "G", "A", "D", "I", "C", "E", "H"};
+    int valor = 1;
+    char res_esperado[] = "A, B, C, D, E, F, G, H, I,";
+    char recorrido[27] = "";
+    
+    for(size_t i = 0; i < 9; i++)
+        abb_guardar(abb, claves[i], &valor);
+    abb_in_order(abb, imprimir_elementos, recorrido);
+    abb_destruir(abb);
+
+    print_test("Prueba abb iterador interno", strcmp(res_esperado, recorrido) != 0);
+}
 /*-----------------------------------------------------------------------------
  *  PROGRAMA PRINCIPAL
  *-----------------------------------------------------------------------------*/
@@ -422,7 +444,8 @@ int main(int argc, char** argv)
 		prueba_abb_borrar();
 		prueba_abb_volumen(500, true);
 		prueba_abb_iterar();
-		//prueba_abb_iterar_volumen(500);
+		prueba_abb_iterar_volumen(500);
+        prueba_abb_iterador_interno();
 	} else {
 		size_t largo = atoi(argv[1]);
 		prueba_abb_volumen(largo, false);
