@@ -420,9 +420,9 @@ int main(int argc, char** argv)
 		prueba_abb_reemplazar();
 		prueba_abb_reemplazar_con_destruir();
 		prueba_abb_borrar();
-		//prueba_abb_volumen(5000, true);
-		//prueba_abb_iterar();
-		//prueba_abb_iterar_volumen(5000);
+		prueba_abb_volumen(500, true);
+		prueba_abb_iterar();
+		//prueba_abb_iterar_volumen(500);
 	} else {
 		size_t largo = atoi(argv[1]);
 		prueba_abb_volumen(largo, false);
