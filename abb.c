@@ -159,14 +159,14 @@ size_t abb_cantidad(abb_t *arbol){
 	return arbol->cantidad;
 }
 
+void abb_destruir_recursivo(nodo_abb_t *nodo, void destruir_dato(void*)){
+	if(!nodo) return;
+	abb_destruir_recursivo(nodo->izq, destruir_dato);
+	abb_destruir_recursivo(nodo->der, destruir_dato);
+	nodo_destruir(nodo, destruir_dato);
+}
 void abb_destruir(abb_t *arbol){
-	abb_iter_t *iter = abb_iter_in_crear(arbol);
-	while(!abb_iter_in_al_final(iter)){
-		nodo_abb_t *nodo = pila_ver_tope(iter->pila);
-		abb_iter_in_avanzar(iter);
-		nodo_destruir(nodo, arbol->destruir_dato);
-	}
-	abb_iter_in_destruir(iter);
+	abb_destruir_recursivo(arbol->raiz, arbol->destruir_dato);
 	free(arbol);
 }
 
