@@ -105,36 +105,37 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 	nodo_abb_t *nodo_nuevo = nodo_crear(clave, dato);
 	if(!nodo_nuevo) return false;
 	//Caso A: el árbol estaba vacio
-	if(!arbol->raiz){
-		arbol->raiz = nodo_nuevo;
-		return true;
-	}
+	if(!arbol->raiz) arbol->raiz = nodo_nuevo;
 	//Caso B: tengo que recorrer el árbol
-	nodo_abb_t *nodo_actual = arbol->raiz;
-	while(nodo_actual){
-		nodo_abb_t *nodo_padre = nodo_actual;
-		int cmp = arbol->comparar(clave, nodo_actual->clave);
-		// La clave es mas grande que la actual. Avanzo a la derecha
-		if(cmp > 0) nodo_actual = nodo_actual->der;
-		// La clave es mas chica que la actual. Avanzo a la izquierda
-		if(cmp < 0) nodo_actual = nodo_actual->izq;
-		if(cmp == 0){
-			//Significa que encontré un nodo con la misma clave. Hay que reempla
-			//zarlo
-			void *aux = nodo_actual->dato;
-			nodo_actual->dato = nodo_nuevo->dato;
-			arbol->destruir_dato(aux);
-			//Destruyo el nodo nuevo porque "reciclo" el nodo viejo, cambiandole
-			//el dato
-			nodo_destruir(nodo_nuevo, NULL);
-			return true;
+	else{
+		nodo_abb_t *nodo_actual = arbol->raiz;
+		nodo_abb_t *nodo_padre;
+		int cmp;
+		while(nodo_actual){
+			nodo_padre = nodo_actual;
+			cmp = arbol->comparar(clave, nodo_actual->clave);
+			// La clave es mas grande que la actual. Avanzo a la derecha
+			if(cmp > 0) nodo_actual = nodo_actual->der;
+			// La clave es mas chica que la actual. Avanzo a la izquierda
+			if(cmp < 0) nodo_actual = nodo_actual->izq;
+			if(cmp == 0){
+				//Significa que encontré un nodo con la misma clave. Hay que reempla
+				//zarlo
+				void *aux = nodo_actual->dato;
+				nodo_actual->dato = nodo_nuevo->dato;
+				arbol->destruir_dato(aux);
+				//Destruyo el nodo nuevo porque "reciclo" el nodo viejo, cambiandole
+				//el dato
+				nodo_destruir(nodo_nuevo, NULL);
+				return true;
+			}
 		}
+		// La clave no existía y debo insertarla. Tengo que verificar si va a la
+		// derecha o izquierda del padre
+		if(cmp > 0) nodo_padre->der = nodo_nuevo;
+		else nodo_padre->izq = nodo_nuevo;
 	}
-	// La clave no existía y debo insertarla. Tengo que verificar si va a la
-	// derecha o izquierda del padre
-	if(cmp > 0) nodo_padre->der = nodo_nuevo;
-	else nodo_padre->izq = nodo_nuevo;
-	arbol->cantidad += 1;
+	arbol->cantidad = arbol->cantidad + 1;
 	return true;
 }
 
@@ -180,8 +181,10 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 			
 			// Caso A: no tiene hijos
 			void *devolucion = nodo_actual->dato;
-			if(!nodo_actual->izq && !nodo_actual->der) 
+			if(!nodo_actual->izq && !nodo_actual->der){
+				//nodo_actual->clave = NULL;
 				nodo_destruir(nodo_actual, NULL);
+			}
 			// Caso B: tiene un solo hijo
 			else if(!nodo_actual->izq || !nodo_actual->der){
 				nodo_abb_t *aux = nodo_actual;
@@ -194,7 +197,7 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 			else{
 				nodo_abb_t *heredero = nodo_actual->der;
 				while(heredero->izq) heredero = heredero->izq;
-				nodo_swap_clave_dato(nodo_actual, heredero)
+				nodo_swap_clave_dato(nodo_actual, heredero);
 				// El heredero no tiene hijos a izquiera, pero puede o no tener
 				// a derecha.
 				// Como hice swap solo de la clave y el dato, tengo que acordar-
@@ -205,9 +208,10 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 				else{
 					nodo_abb_t *aux = heredero;
 					nodo_swap_completo(heredero, heredero->der);
-					nodo_destruir(aux);
+					nodo_destruir(aux, NULL);
 				}
 			}
+			arbol->cantidad = arbol->cantidad - 1;
 			return devolucion;
 		}
 	}

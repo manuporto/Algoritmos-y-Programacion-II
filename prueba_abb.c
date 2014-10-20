@@ -19,7 +19,7 @@
  *-----------------------------------------------------------------------------*/
 
 /* Función auxiliar para imprimir si estuvo OK o no. */
-void print_test(char* name, bool result)
+static void print_test(char* name, bool result)
 {
 	printf("%s: %s\n", name, result? "OK" : "ERROR");
 }
@@ -280,7 +280,7 @@ void prueba_abb_volumen(size_t largo, bool debug)
 
 }
 
-int buscar(const char* clave, char* claves[], size_t largo)
+static int buscar(const char* clave, char* claves[], size_t largo)
 {
 	for (size_t i = 0; i < largo; i++) {
 		if (strcmp(clave, claves[i]) == 0) return i;
