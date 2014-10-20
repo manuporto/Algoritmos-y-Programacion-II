@@ -6,7 +6,10 @@
  *  Padrones: 96817, 96587
  * =====================================================================================
  */
+#ifndef ABB_H
+#define ABB_H
 
+#include <stdbool.h>
 
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
@@ -96,4 +99,4 @@ bool abb_iter_in_al_final(const abb_iter_t *iter);
 // Pre: el iterador fue creado.
 void abb_iter_in_destruir(abb_iter_t* iter);
 
-
+#endif // ABB_H

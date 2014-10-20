@@ -1,6 +1,6 @@
 
 CFLAGS=-g -Wall -std=c99 -pedantic
-EXEC=prueba_hash
+EXEC=prueba_abb
 CC=gcc
 SRC=$(wildcard *.c)
 OBJS=$(SRC:.c=.o)
