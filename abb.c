@@ -105,7 +105,8 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 	nodo_abb_t *nodo_nuevo = nodo_crear(clave, dato);
 	if(!nodo_nuevo) return false;
 	//Caso A: el árbol estaba vacio
-	if(!arbol->raiz) arbol->raiz = nodo_nuevo;
+	if(!arbol->raiz) 
+        arbol->raiz = nodo_nuevo;
 	else{
 		nodo_abb_t *nodo_actual = arbol->raiz;
 		nodo_abb_t *nodo_padre;
