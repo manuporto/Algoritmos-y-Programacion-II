@@ -177,21 +177,31 @@ int es_hijo_izquierdo_o_derecho(nodo_abb_t *padre, nodo_abb_t *hijo){
 }
 
 void* abb_borrar(abb_t *arbol, const char* clave){
+	if(abb_cantidad(arbol) == 0) return NULL;
+	nodo_abb_t *padre;
 	nodo_abb_t *nodo_actual = arbol->raiz;
 	while(nodo_actual){
 		int cmp = arbol->comparar(clave, nodo_actual->clave);
-		nodo_abb_t *padre = nodo_actual;
-		if(cmp > 0) nodo_actual = nodo_actual->der;
-		else if(cmp < 0) nodo_actual = nodo_actual->izq;
+		if(cmp != 0) padre = nodo_actual;
+		if(cmp > 0){
+			nodo_actual = nodo_actual->der;
+			continue;
+		}
+		else if(cmp < 0){
+			nodo_actual = nodo_actual->izq;
+			continue;
+		}
 		else{
 			void *devolucion = nodo_actual->dato;
 			// Caso A: No tiene hijos
 			if(!nodo_actual->der && !nodo_actual->izq){
 				// No tiene hijos y es la raiz del arbol
 				if(nodo_actual == arbol->raiz) arbol->raiz = NULL;
-                int IoD = es_hijo_izquierdo_o_derecho(padre, nodo_actual);
-                if(IoD == -1) padre->izq = NULL;
-                else padre->der = NULL;
+                else{
+                	int IoD = es_hijo_izquierdo_o_derecho(padre, nodo_actual);
+                    if(IoD == -1) padre->izq = NULL;
+                    else padre->der = NULL;
+                }
 			}
 			// Caso B: Tiene un hijo a izquierda o a derecha
 			else if(!nodo_actual->izq || !nodo_actual->der){
