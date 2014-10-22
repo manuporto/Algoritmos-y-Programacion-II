@@ -257,23 +257,8 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
 	if(abb_cantidad(arbol) == 0) return;
 	
     abb_iter_t *abb_iter = abb_iter_in_crear(arbol);
-<<<<<<< HEAD
-    nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
-    const char *clave = abb_iter_in_ver_actual(abb_iter);
-    void *dato;
-    if(nodo_actual->dato != NULL) 
-    {
-        dato = nodo_actual->dato;
-    } else 
-    {
-        dato = NULL;
-    }
-    bool seguir = visitar(clave, dato, extra);
-    while(!abb_iter_in_al_final(abb_iter) && seguir)
-=======
     bool seguir;
     do
->>>>>>> 84db7e989129b834d8e904ce088ba5679f9fcdc0
     {
     	nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
     	const char *clave = abb_iter_in_ver_actual(abb_iter);
