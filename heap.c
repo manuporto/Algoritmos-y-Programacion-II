@@ -16,7 +16,7 @@
  	void **datos;
  	size_t cantidad;
  	size_t tam;
- 	cmp_func_t heap_cmp;
+ 	cmp_func_t cmp;
  };
 
  heap_t *heap_crear(cmp_func_t cmp){
@@ -30,6 +30,7 @@
  	}
  	heap->cantidad = 0;
  	heap->tam = TAM_INI;
+ 	heap->cmp = cmp;
  	return heap;
  }
 
@@ -53,3 +54,49 @@ void *heap_ver_max(const heap_t *heap){
 	if(heap_esta_vacio(heap)) return NULL;
 	return heap->datos[0];
 }
+
+void swap_vector(void **datos, size_t pos1, size_t pos2){
+	void *aux = vector[pos1];
+	vector[pos1] = vector[pos2];
+	vector[pos2] = aux;
+}
+
+size_t devolver_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
+	if(heap->cmp(heap->vector[pos1], heap->vector[pos2]) >= 0) return pos1;
+	else return pos2;
+}
+
+void downheap(heap_t *heap, size_t pos_ini){
+	size_t pos_actual = pos_ini;
+	while(pos_actual < heap->cantidad){
+		void *dato_actual = heap->datos[pos_actual]
+		size_t pos_hijo_izq = 2 * pos_actual + 1;
+		size_t pos_hijo_der = 2 * pos_actual + 2;
+		void *hijo_izq = NULL;
+		void *hijo_der = NULL;
+		if(pos_hijo_izq <= heap->cantidad) hijo_izq = heap->datos[2 * pos_actual + 1];
+		if(pos_hijo_der <= heap->cantidad) hijo_der = heap->datos[2 * pos_actual + 2];
+		// No hay más hijos
+		if(!hijo_izq && !hijo_der) break;
+		// Solo hay un izquierdo
+		else if(hijo_izq && !hijo_der){
+			// El hijo izquierdo es menor o igual al dato actual
+			if(heap->cmp(hijo_izq, dato_actual) < 1) break;
+			// El hijo izquierdo es mayor
+			else{
+				swap_vector(heap->vector, pos_actual, pos_hijo_izq);
+				pos_actual = pos_hijo_izq;
+			}
+		}
+		// Hay dos hijos
+		else{
+			size_t pos_mayor = devolver_pos_hijo_mayor(heap, pos_hijo_izq, pos_hijo_der);
+			if(heap->cmp(heap->vector[pos_mayor], dato_actual) < 1) break;
+			else{
+				swap_vector(heap->vector, pos_actual, pos_mayor);
+				pos_actual = pos_mayor;
+			}
+		}
+	}
+}
+
