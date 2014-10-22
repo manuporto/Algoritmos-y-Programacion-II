@@ -254,7 +254,10 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra)
 {
+	if(abb_cantidad(arbol) == 0) return;
+	
     abb_iter_t *abb_iter = abb_iter_in_crear(arbol);
+<<<<<<< HEAD
     nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
     const char *clave = abb_iter_in_ver_actual(abb_iter);
     void *dato;
@@ -267,14 +270,18 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
     }
     bool seguir = visitar(clave, dato, extra);
     while(!abb_iter_in_al_final(abb_iter) && seguir)
+=======
+    bool seguir;
+    do
+>>>>>>> 84db7e989129b834d8e904ce088ba5679f9fcdc0
     {
-        abb_iter_in_avanzar(abb_iter);
-        nodo_actual = pila_ver_tope(abb_iter->pila);
-        clave = abb_iter_in_ver_actual(abb_iter);
-        dato = nodo_actual->dato;
-        seguir = visitar(clave, dato, extra);
-    }
-
+    	nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
+    	const char *clave = abb_iter_in_ver_actual(abb_iter);
+    	void *dato = nodo_actual->dato;
+    	seguir = visitar(clave, dato, extra);
+    	abb_iter_in_avanzar(abb_iter);
+    }while(!abb_iter_in_al_final(abb_iter) && seguir);
+    
     abb_iter_in_destruir(abb_iter);
 }
 
@@ -293,8 +300,10 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol)
         free(abb_iter);
         return NULL;
     }
+    
     nodo_abb_t *nodo_actual = arbol->raiz;
-    while(nodo_actual){
+    while(nodo_actual)
+    {
     	pila_apilar(abb_iter->pila, nodo_actual);
     	nodo_actual = nodo_actual->izq;
     }
@@ -306,11 +315,13 @@ bool abb_iter_in_avanzar(abb_iter_t *iter)
 {
     if(abb_iter_in_al_final(iter)) return false;
     nodo_abb_t *nodo_actual = pila_desapilar(iter->pila);
-    if(nodo_actual->der){
+    if(nodo_actual->der)
+    {
     	pila_apilar(iter->pila, nodo_actual->der);
-    	nodo_actual = nodo_actual->izq;
-    	while(nodo_actual) {
-    		pila_apilar(iter->pila, nodo_actual);
+    	nodo_actual = nodo_actual->der;
+    	while(nodo_actual->izq)
+    	{
+    		pila_apilar(iter->pila, nodo_actual->izq);
     		nodo_actual = nodo_actual->izq;
     	}
     }
