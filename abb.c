@@ -171,87 +171,86 @@ void abb_destruir(abb_t *arbol){
 	free(arbol);
 }
 
-void *abb_borrar(abb_t *arbol, const char *clave){
-    if(abb_cantidad(arbol) == 0) return NULL;
-
-	nodo_abb_t *nodo_actual = arbol->raiz;
-	nodo_abb_t *nodo_padre = NULL;
-
-	while(nodo_actual){
-		int cmp = arbol->comparar(clave, nodo_actual->clave);
-		if(cmp != 0) nodo_padre = nodo_actual;
-		// La clave es mas grande que la actual. Avanzo a la derecha
-		if(cmp > 0) nodo_actual = nodo_actual->der;
-		// La clave es mas chica que la actual. Avanzo a la izquierda
-		if(cmp < 0) nodo_actual = nodo_actual->izq;
-		if(cmp == 0){
-			// Caso A: no tiene hijos
-			void *devolucion = nodo_actual->dato;
-			if(!nodo_actual->izq && !nodo_actual->der){
-				if(nodo_actual != arbol->raiz){
-					if(nodo_padre->izq == nodo_actual) nodo_padre->izq = NULL;
-					else nodo_padre->der = NULL;
-				}
-				else arbol->raiz = NULL;
-				nodo_destruir(nodo_actual, NULL);
-			}
-			// Caso B: tiene un solo hijo
-			else if(!nodo_actual->izq || !nodo_actual->der){
-				if(!nodo_actual->izq){
-					if(!nodo_padre) arbol->raiz = nodo_actual->der;
-					else if(nodo_padre->izq == nodo_actual) 
-						nodo_padre->izq = nodo_actual->der;
-					else nodo_padre->der = nodo_actual->der;
-				}
-				else{
-					if(!nodo_padre) arbol->raiz = nodo_actual->izq;
-					else if(nodo_padre->izq == nodo_actual) 
-						nodo_padre->izq = nodo_actual->izq;
-					else nodo_padre->der = nodo_actual->izq;	
-				} 
-				nodo_destruir(nodo_actual, NULL);
-			}
-			// Caso C: tiene dos hijos
-			else{
-				nodo_abb_t *heredero = nodo_actual->der;
-				nodo_abb_t *padre_heredero = nodo_actual;
-				while(heredero->izq) {
-					padre_heredero = heredero;
-					heredero = heredero->izq;
-				}
-                if(!nodo_padre) arbol->raiz = heredero;
-				//El heredero es el hijo derecho del actual
-				if(nodo_actual->der == heredero){
-                    if(!nodo_padre) continue;
-                    else if(nodo_padre->izq == nodo_actual) 
-						nodo_padre->izq = heredero;
-					else nodo_padre->der = heredero;
-					// Le agrego todos los hijos que el borrado tenía a izquierda
-					heredero->izq = nodo_actual->izq;
-					nodo_destruir(nodo_actual, NULL);
-				}
-				// El heredero no tiene hijos derechos
-				else if(!heredero->der){
-					nodo_swap_clave_dato(nodo_actual, heredero);
-					nodo_destruir(heredero, NULL);
-				}
-				// El heredero tiene hijos derechos
-				else{
-					// El heredero solo puede ser hijo izquierdo de su padre
-					// en estos casos
-					nodo_swap_clave_dato(nodo_actual, heredero);
-					padre_heredero->izq = heredero->der;
-					nodo_destruir(heredero, NULL);
-				}
-			}
-			arbol->cantidad = arbol->cantidad - 1;
-			return devolucion;
-		}
-	}
-	// La clave no está
-	return NULL;
+int es_hijo_izquierdo_o_derecho(nodo_abb_t *padre, nodo_abb_t *hijo){
+	if(padre->der == hijo) return 1;
+	else return -1;
 }
 
+void* abb_borrar(abb_t *arbol, const char* clave){
+	nodo_abb_t *nodo_actual = arbol->raiz;
+	while(nodo_actual){
+		int cmp = arbol->comparar(clave, nodo_actual->clave);
+		nodo_abb_t *padre = nodo_actual;
+		if(cmp > 0) nodo_actual = nodo_actual->der;
+		else if(cmp < 0) nodo_actual = nodo_actual->izq;
+		else{
+			void *devolucion = nodo_actual->dato;
+			// Caso A: No tiene hijos
+			if(!nodo_actual->der && !nodo_actual->izq){
+				// No tiene hijos y es la raiz del arbol
+				if(nodo_actual == arbol->raiz) arbol->raiz = NULL;
+                int IoD = es_hijo_izquierdo_o_derecho(padre, nodo_actual);
+                if(IoD == -1) padre->izq = NULL;
+                else padre->der = NULL;
+			}
+			// Caso B: Tiene un hijo a izquierda o a derecha
+			else if(!nodo_actual->izq || !nodo_actual->der){
+				// Se quiere borrar la raiz
+				if(nodo_actual == arbol->raiz){
+					if(!arbol->raiz->izq) arbol->raiz = arbol->raiz->der;
+					else arbol->raiz = arbol->raiz->izq;
+				}
+				else{
+					int IoD = es_hijo_izquierdo_o_derecho(padre, nodo_actual);
+					// Solo tiene hijos a derecha
+					if(!nodo_actual->izq){
+						// El nodo que quiero borrar es un hijo izquierdo
+						if(IoD == -1) padre->izq = nodo_actual->der;
+						// Es un derecho
+						else padre->der = nodo_actual->der;
+					}
+					// Solo tiene hijos a izquierda
+					else{
+						// El nodo que quiero borrar es un hijo izquierdo
+						if(IoD == -1) padre->izq = nodo_actual->izq;
+						// Es un derecho
+						else padre->der = nodo_actual->izq;
+					}
+				}
+			}
+			// Caso C: Tiene hijos de los dos lados
+			else{
+				nodo_abb_t *padre_heredero = nodo_actual;
+				nodo_abb_t *heredero = nodo_actual->der;
+				nodo_abb_t *hijo_heredero = heredero->izq;
+				while(hijo_heredero){
+					padre_heredero = heredero;
+					heredero = hijo_heredero;
+					hijo_heredero = hijo_heredero->izq;
+				}
+				nodo_swap_clave_dato(heredero, nodo_actual);
+				// Ya hice el cambio correspondiente. Heredero ahora tiene los datos que deben ser
+				// destruidos
+				// Caso 1: el heredero es el hijo derecho del actual
+				if(nodo_actual->der == heredero) padre_heredero->der = heredero->der;
+				// Caso 2: el heredero tenia hijos a la derecha. Heredero solo puede ser un hijo
+				// izquierdo
+				else if(heredero->der) padre_heredero->izq = heredero->der;
+				// Caso 3: el heredero era un nodo hoja
+				else padre_heredero->izq = NULL;
+				// Cambio la referencia de nodo actual para después borrar el nodo correcto.
+				// Recordemos que por el swap de arriba, heredero ahora tiene los datos que quiero
+				// borrar
+				nodo_actual = heredero;
+			}
+			nodo_destruir(nodo_actual, arbol->destruir_dato);
+			arbol->cantidad = arbol->cantidad -1;
+            return devolucion;
+		}
+	}
+	// La clave no estaba
+	return NULL;
+}
 
 /*-----------------------------------------------------------------------------
  *  PRIMITIVA DEL ITERADOR INTERNO
