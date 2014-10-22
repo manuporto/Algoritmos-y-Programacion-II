@@ -416,9 +416,13 @@ void prueba_abb_iterador_interno()
 {
     abb_t *abb = abb_crear(strcmp, NULL);
 	char *claves[] = {"F", "B", "G", "A", "D", "I", "C", "E", "H"};
-    const *res_esperado[] = "A, B, C, D, E, F, G, H, I,";
-    char *recorrido[strlen(res_esperado)];
+    int valor = 1;
+    char res_esperado[] = "A, B, C, D, E, F, G, H, I,";
+    size_t largo = strlen(res_esperado);
+    char recorrido[largo+1];
     
+    for(size_t i = 0; i <= 3; i++)
+        abb_guardar(abb, claves[i], &valor);
     abb_in_order(abb, imprimir_elementos, recorrido);
 
     print_test("Prueba abb iterador interno", strcmp(res_esperado, recorrido) != 0);
@@ -433,22 +437,16 @@ int main(int argc, char** argv)
 
 	if (argc < 2) {
 		/* Ejecuta todas las pruebas unitarias. */
-		prueba_crear_abb_vacio();
-		prueba_iterar_abb_vacio();
-		prueba_abb_insertar();
-		prueba_abb_reemplazar();
-		prueba_abb_reemplazar_con_destruir();
-		prueba_abb_borrar();
-<<<<<<< HEAD
+		//prueba_crear_abb_vacio();
+		//prueba_iterar_abb_vacio();
+		//prueba_abb_insertar();
+		//prueba_abb_reemplazar();
+		//prueba_abb_reemplazar_con_destruir();
+		//prueba_abb_borrar();
 		//prueba_abb_volumen(5000, true);
 		//prueba_abb_iterar();
 		//prueba_abb_iterar_volumen(5000);
-        //prueba_abb_iterador_interno();
-=======
-		prueba_abb_volumen(500, true);
-		prueba_abb_iterar();
-		//prueba_abb_iterar_volumen(500);
->>>>>>> 6512d9528c8d90f39b92572c51a0e42d2eb17b03
+        prueba_abb_iterador_interno();
 	} else {
 		size_t largo = atoi(argv[1]);
 		prueba_abb_volumen(largo, false);

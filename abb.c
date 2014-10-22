@@ -257,7 +257,14 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
     abb_iter_t *abb_iter = abb_iter_in_crear(arbol);
     nodo_abb_t *nodo_actual = pila_ver_tope(abb_iter->pila);
     const char *clave = abb_iter_in_ver_actual(abb_iter);
-    void *dato = nodo_actual->dato;
+    void *dato;
+    if(nodo_actual->dato != NULL) 
+    {
+        dato = nodo_actual->dato;
+    } else 
+    {
+        dato = NULL;
+    }
     bool seguir = visitar(clave, dato, extra);
     while(!abb_iter_in_al_final(abb_iter) && seguir)
     {
