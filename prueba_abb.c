@@ -436,16 +436,16 @@ int main(int argc, char** argv)
 
 	if (argc < 2) {
 		/* Ejecuta todas las pruebas unitarias. */
-		//prueba_crear_abb_vacio();
-		//prueba_iterar_abb_vacio();
-		//prueba_abb_insertar();
-		//prueba_abb_reemplazar();
-		//prueba_abb_reemplazar_con_destruir();
+		prueba_crear_abb_vacio();
+		prueba_iterar_abb_vacio();
+		prueba_abb_insertar();
+		prueba_abb_reemplazar();
+		prueba_abb_reemplazar_con_destruir();
 		prueba_abb_borrar();
-		//prueba_abb_volumen(500, true);
-		//prueba_abb_iterar();
-		//prueba_abb_iterar_volumen(500);
-        //prueba_abb_iterador_interno();
+		prueba_abb_volumen(500, true);
+		prueba_abb_iterar();
+		prueba_abb_iterar_volumen(500);
+        prueba_abb_iterador_interno();
 	} else {
 		size_t largo = atoi(argv[1]);
 		prueba_abb_volumen(largo, false);
