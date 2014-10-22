@@ -172,8 +172,11 @@ void abb_destruir(abb_t *arbol){
 }
 
 void *abb_borrar(abb_t *arbol, const char *clave){
+    if(abb_cantidad(arbol) == 0) return NULL;
+
 	nodo_abb_t *nodo_actual = arbol->raiz;
 	nodo_abb_t *nodo_padre = NULL;
+
 	while(nodo_actual){
 		int cmp = arbol->comparar(clave, nodo_actual->clave);
 		if(cmp != 0) nodo_padre = nodo_actual;
@@ -216,9 +219,11 @@ void *abb_borrar(abb_t *arbol, const char *clave){
 					padre_heredero = heredero;
 					heredero = heredero->izq;
 				}
+                if(!nodo_padre) arbol->raiz = heredero;
 				//El heredero es el hijo derecho del actual
 				if(nodo_actual->der == heredero){
-					if(nodo_padre->izq == nodo_actual) 
+                    if(!nodo_padre) continue;
+                    else if(nodo_padre->izq == nodo_actual) 
 						nodo_padre->izq = heredero;
 					else nodo_padre->der = heredero;
 					// Le agrego todos los hijos que el borrado tenía a izquierda
