@@ -17,7 +17,7 @@
  *-----------------------------------------------------------------------------*/
 
  struct heap{
- 	void **datos;
+ 	void **vector;
  	size_t cantidad;
  	size_t tam;
  	cmp_func_t cmp;
@@ -27,31 +27,65 @@
  *  FUNCIONES AUXILIARES
  *-----------------------------------------------------------------------------*/
 
-static size_t obtener_pos_padre(heap, size_t pos);
+// Post: devuelve el indice donde se encuentra el padre del elemento.
+static size_t obtener_pos_padre(size_t pos)
+{
+    return (pos - 1) / 2;
+}
 
-void swap_vector(void **datos, size_t pos1, size_t pos2){
+// Post: deuvelve el indice donde se ecuentra el hijo izquierdo del elemento.
+static size_t obtener_pos_izq(size_t pos)
+{
+    return 2 * pos + 1;
+}
+
+// Post: devuelve el indice donde se encuentra el hijo derecho del elemento.
+static size_t obtener_pos_der(size_t pos)
+{
+    return 2 * pos + 2;
+}
+
+static void swap_vector(void **vector, size_t pos1, size_t pos2){
 	void *aux = vector[pos1];
 	vector[pos1] = vector[pos2];
 	vector[pos2] = aux;
 }
 
-size_t devolver_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
+static size_t devolver_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
 	if(heap->cmp(heap->vector[pos1], heap->vector[pos2]) >= 0) return pos1;
 	else return pos2;
 }
 
-static void upheap(heap_t *heap, void* elem);
+static void upheap(heap_t *heap, size_t pos)
+{
+    if(heap_cantidad(heap) == 1) return;
 
-void downheap(heap_t *heap, size_t pos_ini){
+    while(pos >= 0)
+    {
+        void *dato_actual = heap->vector[pos];
+        size_t pos_padre = obtener_pos_padre(pos);
+        void *dato_padre = heap->vector[pos_padre];
+        if(heap->cmp(dato_padre, dato_actual) >= 0) return;
+        else
+        {
+            swap(heap->vector, pos, pos_padre);
+            pos = pos_padre;
+            continue;
+        }
+
+    }
+}
+
+static void downheap(heap_t *heap, size_t pos_ini){
 	size_t pos_actual = pos_ini;
 	while(pos_actual < heap->cantidad){
-		void *dato_actual = heap->datos[pos_actual]
+		void *dato_actual = heap->vector[pos_actual]
 		size_t pos_hijo_izq = 2 * pos_actual + 1;
 		size_t pos_hijo_der = 2 * pos_actual + 2;
 		void *hijo_izq = NULL;
 		void *hijo_der = NULL;
-		if(pos_hijo_izq <= heap->cantidad) hijo_izq = heap->datos[2 * pos_actual + 1];
-		if(pos_hijo_der <= heap->cantidad) hijo_der = heap->datos[2 * pos_actual + 2];
+		if(pos_hijo_izq <= heap->cantidad) hijo_izq = heap->vector[2 * pos_actual + 1];
+		if(pos_hijo_der <= heap->cantidad) hijo_der = heap->vector[2 * pos_actual + 2];
 		// No hay más hijos
 		if(!hijo_izq && !hijo_der) break;
 		// Solo hay un izquierdo
@@ -84,8 +118,8 @@ void downheap(heap_t *heap, size_t pos_ini){
  	heap_t *heap = malloc(sizeof(heap_t));
  	if(!heap) return NULL;
 
- 	heap->datos = malloc(sizeof(void*)*TAM_INI);
- 	if(!heap->datos){
+ 	heap->vector = malloc(sizeof(void*)*TAM_INI);
+ 	if(!heap->vector){
  		free(heap);
  		return NULL;
  	}
@@ -97,9 +131,9 @@ void downheap(heap_t *heap, size_t pos_ini){
 
  void heap_destruir(heap_t *heap, void destruir_elemento(void *e)){
  	if(destruir_elemento){
- 		for(size_t i = 0; i < cantidad; i++) destruir_elemento(heap->datos[i]);
+ 		for(size_t i = 0; i < cantidad; i++) destruir_elemento(heap->vector[i]);
  	}
- 	free(heap->datos);
+ 	free(heap->vector);
  	free(heap);
  }
 
@@ -108,22 +142,33 @@ size_t heap_cantidad(const heap_t *heap){
 }
 
 bool heap_esta_vacio(const heap_t *heap){
-	return(heap->cantidad == 0);
+	return heap_cantidad(heap) == 0;
 }
 
 bool heap_encolar(heap_t *heap, void *elem)
 {
     if(!elem) return false;
-    if(heap->cantidad == heap->tam) // Redimensionar
-    heap->datos[heap->cantidad+1] = elem;
-    upheap(heap, elem);
+    if(heap_cantidad(heap) == heap->tam) // Redimensionar
+    heap->vector[heap_cantidad(heap)] = elem;
     heap->cantidad++;
+    upheap(heap, elem);
     return true;
 }
 
 void *heap_ver_max(const heap_t *heap){
 	if(heap_esta_vacio(heap)) return NULL;
-	return heap->datos[0];
+	return heap->vector[0];
 }
 
-void *heap_desencolar(heap_t *heap);
+void *heap_desencolar(heap_t *heap)
+{
+    // Falta evaluar una condicion para que redimensione.
+    
+    if(heap_cantidad(heap) == 0) return NULL;
+    // Falta ver caso de cuando es el ultimo elemento.
+    void *dato_dev = heap->vector[0];
+    heap->vector[0] = heap->vector[heap_cantidad(heap)];
+    heap->cantidad--;
+    downheap(heap, heap_cantidad(heap));
+    return dato_dev;
+}
