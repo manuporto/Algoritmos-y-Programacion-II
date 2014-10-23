@@ -12,6 +12,10 @@
 #include <string.h>
 #define TAM_INI 50
 
+/*-----------------------------------------------------------------------------
+ *  DEFINICION DE ESTRUCTURAS
+ *-----------------------------------------------------------------------------*/
+
  struct heap{
  	void **datos;
  	size_t cantidad;
@@ -19,41 +23,11 @@
  	cmp_func_t cmp;
  };
 
- heap_t *heap_crear(cmp_func_t cmp){
- 	heap_t *heap = malloc(sizeof(heap_t));
- 	if(!heap) return NULL;
+/*-----------------------------------------------------------------------------
+ *  FUNCIONES AUXILIARES
+ *-----------------------------------------------------------------------------*/
 
- 	heap->datos = malloc(sizeof(void*)*TAM_INI);
- 	if(!heap->datos){
- 		free(heap);
- 		return NULL;
- 	}
- 	heap->cantidad = 0;
- 	heap->tam = TAM_INI;
- 	heap->cmp = cmp;
- 	return heap;
- }
-
- void heap_destruir(heap_t *heap, void destruir_elemento(void *e)){
- 	if(destruir_elemento){
- 		for(size_t i = 0; i < cantidad; i++) destruir_elemento(heap->datos[i]);
- 	}
- 	free(heap->datos);
- 	free(heap);
- }
-
-size_t heap_cantidad(const heap_t *heap){
-	return heap->cantidad;
-}
-
-bool heap_esta_vacio(const heap_t *heap){
-	return(heap->cantidad == 0);
-}
-
-void *heap_ver_max(const heap_t *heap){
-	if(heap_esta_vacio(heap)) return NULL;
-	return heap->datos[0];
-}
+static size_t obtener_pos_padre(heap, size_t pos);
 
 void swap_vector(void **datos, size_t pos1, size_t pos2){
 	void *aux = vector[pos1];
@@ -65,6 +39,8 @@ size_t devolver_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
 	if(heap->cmp(heap->vector[pos1], heap->vector[pos2]) >= 0) return pos1;
 	else return pos2;
 }
+
+static void upheap(heap_t *heap, void* elem);
 
 void downheap(heap_t *heap, size_t pos_ini){
 	size_t pos_actual = pos_ini;
@@ -100,3 +76,54 @@ void downheap(heap_t *heap, size_t pos_ini){
 	}
 }
 
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVAS
+ *-----------------------------------------------------------------------------*/
+
+ heap_t *heap_crear(cmp_func_t cmp){
+ 	heap_t *heap = malloc(sizeof(heap_t));
+ 	if(!heap) return NULL;
+
+ 	heap->datos = malloc(sizeof(void*)*TAM_INI);
+ 	if(!heap->datos){
+ 		free(heap);
+ 		return NULL;
+ 	}
+ 	heap->cantidad = 0;
+ 	heap->tam = TAM_INI;
+ 	heap->cmp = cmp;
+ 	return heap;
+ }
+
+ void heap_destruir(heap_t *heap, void destruir_elemento(void *e)){
+ 	if(destruir_elemento){
+ 		for(size_t i = 0; i < cantidad; i++) destruir_elemento(heap->datos[i]);
+ 	}
+ 	free(heap->datos);
+ 	free(heap);
+ }
+
+size_t heap_cantidad(const heap_t *heap){
+	return heap->cantidad;
+}
+
+bool heap_esta_vacio(const heap_t *heap){
+	return(heap->cantidad == 0);
+}
+
+bool heap_encolar(heap_t *heap, void *elem)
+{
+    if(!elem) return false;
+    if(heap->cantidad == heap->tam) // Redimensionar
+    heap->datos[heap->cantidad+1] = elem;
+    upheap(heap, elem);
+    heap->cantidad++;
+    return true;
+}
+
+void *heap_ver_max(const heap_t *heap){
+	if(heap_esta_vacio(heap)) return NULL;
+	return heap->datos[0];
+}
+
+void *heap_desencolar(heap_t *heap);
