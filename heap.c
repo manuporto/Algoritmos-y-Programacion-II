@@ -192,7 +192,7 @@ void *heap_desencolar(heap_t *heap)
 void heap_sort(void *elementos[], size_t cant, cmp_func_t cmp){
 	heap_t *heap = heapify(elementos, cant, cmp);
 	while(heap->cantidad > 1){
-		swap_vector(heap->vector, 0, cant);
+		swap_vector(heap->vector, 0, heap->cantidad - 1);
 		heap->cantidad--;
 		downheap(heap, 0);
 	}
