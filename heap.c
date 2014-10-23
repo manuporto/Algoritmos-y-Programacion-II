@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "heap.h"
 #define TAM_INI 50
 
 /*-----------------------------------------------------------------------------
@@ -51,7 +52,7 @@ static void swap_vector(void **vector, size_t pos1, size_t pos2){
 	vector[pos2] = aux;
 }
 
-static size_t devolver_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
+static size_t obtener_pos_hijo_mayor(heap_t *heap, size_t pos1, size_t pos2){
 	if(heap->cmp(heap->vector[pos1], heap->vector[pos2]) >= 0) return pos1;
 	else return pos2;
 }
@@ -68,9 +69,8 @@ static void upheap(heap_t *heap, size_t pos)
         if(heap->cmp(dato_padre, dato_actual) >= 0) return;
         else
         {
-            swap(heap->vector, pos, pos_padre);
+            swap_vector(heap->vector, pos, pos_padre);
             pos = pos_padre;
-            continue;
         }
 
     }
@@ -79,13 +79,13 @@ static void upheap(heap_t *heap, size_t pos)
 static void downheap(heap_t *heap, size_t pos_ini){
 	size_t pos_actual = pos_ini;
 	while(pos_actual < heap->cantidad){
-		void *dato_actual = heap->vector[pos_actual]
-		size_t pos_hijo_izq = 2 * pos_actual + 1;
-		size_t pos_hijo_der = 2 * pos_actual + 2;
+		void *dato_actual = heap->vector[pos_actual];
+		size_t pos_hijo_izq = obtener_pos_izq(pos_actual);
+		size_t pos_hijo_der = obtener_pos_der(pos_actual);
 		void *hijo_izq = NULL;
 		void *hijo_der = NULL;
-		if(pos_hijo_izq <= heap->cantidad) hijo_izq = heap->vector[2 * pos_actual + 1];
-		if(pos_hijo_der <= heap->cantidad) hijo_der = heap->vector[2 * pos_actual + 2];
+		if(pos_hijo_izq < heap->cantidad) hijo_izq = heap->vector[pos_hijo_izq];
+		if(pos_hijo_der < heap->cantidad) hijo_der = heap->vector[pos_hijo_der];
 		// No hay más hijos
 		if(!hijo_izq && !hijo_der) break;
 		// Solo hay un izquierdo
@@ -100,7 +100,7 @@ static void downheap(heap_t *heap, size_t pos_ini){
 		}
 		// Hay dos hijos
 		else{
-			size_t pos_mayor = devolver_pos_hijo_mayor(heap, pos_hijo_izq, pos_hijo_der);
+			size_t pos_mayor = obtener_pos_hijo_mayor(heap, pos_hijo_izq, pos_hijo_der);
 			if(heap->cmp(heap->vector[pos_mayor], dato_actual) < 1) break;
 			else{
 				swap_vector(heap->vector, pos_actual, pos_mayor);
@@ -110,6 +110,22 @@ static void downheap(heap_t *heap, size_t pos_ini){
 	}
 }
 
+heap_t *heapify(void **vector, size_t cant, cmp_func_t cmp){
+	heap_t *heap_aux = heap_crear(cmp);
+	void **vector_aux = heap_aux->vector;
+	heap_aux->vector = vector;
+	free(vector_aux);
+	heap_aux->cantidad = cant;
+	heap_aux->tam = cant;
+	heap_aux->cmp = cmp;
+	// Solo hay que hacer downheap de los elementos con hijos
+	long long actual = cant / 2 - 1;
+	while(actual >= 0){
+		downheap(heap_aux, actual);
+		actual--;
+	}
+	return heap_aux;
+}
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS
  *-----------------------------------------------------------------------------*/
@@ -131,7 +147,7 @@ static void downheap(heap_t *heap, size_t pos_ini){
 
  void heap_destruir(heap_t *heap, void destruir_elemento(void *e)){
  	if(destruir_elemento){
- 		for(size_t i = 0; i < cantidad; i++) destruir_elemento(heap->vector[i]);
+ 		for(size_t i = 0; i < heap->cantidad; i++) destruir_elemento(heap->vector[i]);
  	}
  	free(heap->vector);
  	free(heap);
@@ -151,7 +167,7 @@ bool heap_encolar(heap_t *heap, void *elem)
     if(heap_cantidad(heap) == heap->tam) // Redimensionar
     heap->vector[heap_cantidad(heap)] = elem;
     heap->cantidad++;
-    upheap(heap, elem);
+    upheap(heap, heap_cantidad(heap));
     return true;
 }
 
@@ -169,6 +185,16 @@ void *heap_desencolar(heap_t *heap)
     void *dato_dev = heap->vector[0];
     heap->vector[0] = heap->vector[heap_cantidad(heap)];
     heap->cantidad--;
-    downheap(heap, heap_cantidad(heap));
+    downheap(heap, 0);
     return dato_dev;
+}
+
+void heap_sort(void *elementos[], size_t cant, cmp_func_t cmp){
+	heap_t *heap = heapify(elementos, cant, cmp);
+	while(heap->cantidad > 1){
+		swap_vector(heap->vector, 0, cant);
+		heap->cantidad--;
+		downheap(heap, 0);
+	}
+	free(heap);
 }
