@@ -15,8 +15,8 @@ void print_test(char* name, bool result)
 }
 
 int cmp(const void *a, const void *b){
-	if ((int)a > (int)b) return 1;
-	else if((int)a == (int)b) return 0;
+	if (*(int*)a > *(int*)b) return 1;
+	else if(*(int*)a == *(int*)b) return 0;
 	else return -1;
 }
 
@@ -56,7 +56,7 @@ void prueba_heap_encolar()
     print_test("Prueba heap insertar elem2", heap_encolar(heap, &elem2));
     print_test("Prueba heap insertar elem3", heap_encolar(heap, &elem3));
     print_test("Prueba heap la cantidad de elementos es 3", heap_cantidad(heap) == 3);
-	print_test("Prueba heap ver maximo es elem3", heap_ver_max(heap) == &elem3);
+	print_test("Prueba heap ver maximo es elem2", heap_ver_max(heap) == &elem2);
 
     heap_destruir(heap, NULL);
 }
@@ -83,10 +83,10 @@ void prueba_heap_desencolar()
     print_test("Prueba heap la cantidad de elementos es 2", heap_cantidad(heap) == 2);
     print_test("Prueba heap desencolar es elem1", heap_desencolar(heap) == &elem1);
     print_test("Prueba heap la cantidad de elementos es 1", heap_cantidad(heap) == 1);
-    print_test("Prueba heap desencolar es elem2", heap_desencolar(heap) == &elem2);
+    print_test("Prueba heap desencolar es elem3", heap_desencolar(heap) == &elem3);
     print_test("Prueba heap la cantidad de elementos es 0", heap_cantidad(heap) == 0);
     print_test("Prueba heap esta vacio es true", heap_esta_vacio(heap));
-    print_test("Prueba heap ver maximo es NULL", heap_ver_max(heap));
+    print_test("Prueba heap ver maximo es NULL", !heap_ver_max(heap));
     print_test("Prueba heap desencolar es NULL", !heap_desencolar(heap));
 
     heap_destruir(heap, NULL);
