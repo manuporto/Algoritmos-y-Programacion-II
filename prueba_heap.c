@@ -34,10 +34,10 @@ void prueba_heap_vacio()
     print_test("Prueba heap crear heap vacio", heap);
     print_test("Prueba heap la cantidad de elementos es 0", heap_cantidad(heap) == 0);
     print_test("Prueba heap esta vacio es true", heap_esta_vacio(heap));
-	print_test("Prueba heap ver maximo, es NULL", !heap_ver_max(heap));
-	print_test("Prueba heap desencolar, es NULL", !heap_desencolar(heap));
-
-	heap_destruir(heap, NULL);
+    print_test("Prueba heap ver maximo, es NULL", !heap_ver_max(heap));
+    print_test("Prueba heap desencolar, es NULL", !heap_desencolar(heap));
+    
+    heap_destruir(heap, NULL);
 }
 
 void prueba_heap_encolar()
@@ -52,11 +52,11 @@ void prueba_heap_encolar()
     print_test("Prueba heap insertar elem1", heap_encolar(heap, &elem1));
     print_test("Prueba heap esta vacio es false", !heap_esta_vacio(heap));
     print_test("Prueba heap la cantidad de elementos es 1", heap_cantidad(heap) == 1);
-	print_test("Prueba heap ver maximo es elem1", heap_ver_max(heap) == &elem1);
+    print_test("Prueba heap ver maximo es elem1", heap_ver_max(heap) == &elem1);
     print_test("Prueba heap insertar elem2", heap_encolar(heap, &elem2));
     print_test("Prueba heap insertar elem3", heap_encolar(heap, &elem3));
     print_test("Prueba heap la cantidad de elementos es 3", heap_cantidad(heap) == 3);
-	print_test("Prueba heap ver maximo es elem2", heap_ver_max(heap) == &elem2);
+    print_test("Prueba heap ver maximo es elem2", heap_ver_max(heap) == &elem2);
 
     heap_destruir(heap, NULL);
 }
@@ -73,11 +73,11 @@ void prueba_heap_desencolar()
     print_test("Prueba heap insertar elem1", heap_encolar(heap, &elem1));
     print_test("Prueba heap esta vacio es false", !heap_esta_vacio(heap));
     print_test("Prueba heap la cantidad de elementos es 1", heap_cantidad(heap) == 1);
-	print_test("Prueba heap ver maximo es elem1", heap_ver_max(heap) == &elem1);
+    print_test("Prueba heap ver maximo es elem1", heap_ver_max(heap) == &elem1);
     print_test("Prueba heap insertar elem2", heap_encolar(heap, &elem2));
     print_test("Prueba heap insertar elem3", heap_encolar(heap, &elem3));
     print_test("Prueba heap la cantidad de elementos es 3", heap_cantidad(heap) == 3);
-	print_test("Prueba heap ver maximo es elem2", heap_ver_max(heap) == &elem2);
+    print_test("Prueba heap ver maximo es elem2", heap_ver_max(heap) == &elem2);
 
     print_test("Prueba heap desencolar es elem2", heap_desencolar(heap) == &elem2);
     print_test("Prueba heap la cantidad de elementos es 2", heap_cantidad(heap) == 2);
@@ -107,7 +107,7 @@ void prueba_heap_destruir()
     print_test("Prueba heap insertar elem1", heap_encolar(heap, elem1));
     print_test("Prueba heap insertar elem2", heap_encolar(heap, elem2));
     print_test("Prueba heap insertar elem3", heap_encolar(heap, elem3));
-	print_test("Prueba heap ver maximo es elem3", heap_ver_max(heap) == elem3);
+    print_test("Prueba heap ver maximo es elem3", heap_ver_max(heap) == elem3);
     print_test("Prueba heap la cantidad de elementos es 3", heap_cantidad(heap) == 3);
     print_test("Prueba heap esta vacio es false", !heap_esta_vacio(heap));
 
@@ -146,15 +146,15 @@ void prueba_heap_sort()
 {
     printf("INICIO DE PRUEBAS HEAPSORT\n");
     int uno = 1;
-	int tres = 3;
-	int cinco = 5;
-	int seis = 6;
-	int siete = 7;
-	int ocho = 8;
-	int nueve = 9;
-	int *vector[] = {&seis, &tres, &cinco, &ocho, &uno, &nueve, &siete};
+    int tres = 3;
+    int cinco = 5;
+    int seis = 6;
+    int siete = 7;
+    int ocho = 8;
+    int nueve = 9;
+    int *vector[] = {&seis, &tres, &cinco, &ocho, &uno, &nueve, &siete};
     int *vector_esp[] = {&uno, &tres, &cinco, &seis, &siete, &ocho, &nueve};
-	heap_sort((void**)vector, 7, cmp);
+    heap_sort((void**)vector, 7, cmp);
 
     for(size_t i = 0; i < 7; i++)
     {
