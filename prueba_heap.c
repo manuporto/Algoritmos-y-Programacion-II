@@ -115,6 +115,7 @@ void prueba_heap_destruir()
     // con el heap.
     print_test("Prueba heap desencolar es elem3", heap_desencolar(heap) == elem3);
 
+    free(elem3);
     heap_destruir(heap, free);
     print_test("Prueba heap destruir", true);
 }
