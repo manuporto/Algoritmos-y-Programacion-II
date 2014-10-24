@@ -61,7 +61,7 @@ static void upheap(heap_t *heap, size_t pos)
 {
     if(heap_cantidad(heap) == 1) return;
 
-    while(pos >= 0)
+    while(pos > 0)
     {
         void *dato_actual = heap->vector[pos];
         size_t pos_padre = obtener_pos_padre(pos);
@@ -164,10 +164,10 @@ bool heap_esta_vacio(const heap_t *heap){
 bool heap_encolar(heap_t *heap, void *elem)
 {
     if(!elem) return false;
-    if(heap_cantidad(heap) == heap->tam) // Redimensionar
+    if(heap_cantidad(heap) == heap->tam); // Redimensionar
     heap->vector[heap_cantidad(heap)] = elem;
     heap->cantidad++;
-    upheap(heap, heap_cantidad(heap));
+    upheap(heap, heap_cantidad(heap)-1);
     return true;
 }
 
@@ -183,7 +183,7 @@ void *heap_desencolar(heap_t *heap)
     if(heap_cantidad(heap) == 0) return NULL;
     // Falta ver caso de cuando es el ultimo elemento.
     void *dato_dev = heap->vector[0];
-    heap->vector[0] = heap->vector[heap_cantidad(heap)];
+    heap->vector[0] = heap->vector[heap_cantidad(heap)-1];
     heap->cantidad--;
     downheap(heap, 0);
     return dato_dev;
