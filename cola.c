@@ -18,7 +18,7 @@ struct cola{
 // Crea un nodo
 // Recibe un puntero a un valor
 // Devuelve un puntero a un nodo
-static nodo_t* nodo_crear(void* valor){
+nodo_t* nodo_crear(void* valor){
 	nodo_t* nuevo_nodo = malloc(sizeof(nodo_t));
 	if (nuevo_nodo == NULL) return NULL;
 	
@@ -29,7 +29,7 @@ static nodo_t* nodo_crear(void* valor){
 
 // Destruye el nodo
 // Pre: el nodo fue creado
-static void nodo_destruir(nodo_t* nodo){
+void nodo_destruir(nodo_t* nodo){
 	free(nodo);
 }
 
