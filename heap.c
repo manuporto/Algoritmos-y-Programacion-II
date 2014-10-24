@@ -12,6 +12,7 @@
 #include <string.h>
 #include "heap.h"
 #define TAM_INI 50
+#define FACTOR_REDUCCION 4
 
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
@@ -126,6 +127,16 @@ heap_t *heapify(void **vector, size_t cant, cmp_func_t cmp){
 	}
 	return heap_aux;
 }
+
+static bool heap_redimensionar(heap_t *heap, size_t tam_nuevo)
+{
+   void **datos_nuevos = realloc(heap->vector, tam_nuevo * sizeof(void*));
+   if(datos_nuevos == NULL) return false;
+
+   heap->vector = datos_nuevos;
+   heap->tam = tam_nuevo;
+   return true;
+}
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS
  *-----------------------------------------------------------------------------*/
@@ -164,7 +175,8 @@ bool heap_esta_vacio(const heap_t *heap){
 bool heap_encolar(heap_t *heap, void *elem)
 {
     if(!elem) return false;
-    if(heap_cantidad(heap) == heap->tam); // Redimensionar
+    if(heap_cantidad(heap) == heap->tam) 
+    	heap_redimensionar(heap, heap->tam + TAM_INI);
     heap->vector[heap_cantidad(heap)] = elem;
     heap->cantidad++;
     upheap(heap, heap_cantidad(heap)-1);
@@ -178,7 +190,7 @@ void *heap_ver_max(const heap_t *heap){
 
 void *heap_desencolar(heap_t *heap)
 {
-    // Falta evaluar una condicion para que redimensione.
+    
     
     if(heap_cantidad(heap) == 0) return NULL;
     // Falta ver caso de cuando es el ultimo elemento.
@@ -186,6 +198,8 @@ void *heap_desencolar(heap_t *heap)
     heap->vector[0] = heap->vector[heap_cantidad(heap)-1];
     heap->cantidad--;
     downheap(heap, 0);
+    if(heap->cantidad < heap->tam / FACTOR_REDUCCION && heap->tam > TAM_INI)
+    	heap_redimensionar(heap, heap->tam / 2);
     return dato_dev;
 }
 
