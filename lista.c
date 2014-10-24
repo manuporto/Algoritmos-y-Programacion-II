@@ -39,7 +39,7 @@ struct lista_iter
  *  PRIMITIVAS DEL NODO
  *-----------------------------------------------------------------------------*/
 
-nodo_lista_t *nodo_crear(void *dato)
+static nodo_lista_t *nodo_crear(void *dato)
 {
     nodo_lista_t *nodo = malloc(sizeof(nodo_lista_t));
     if(!nodo) return NULL;

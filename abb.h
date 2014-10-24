@@ -6,7 +6,10 @@
  *  Padrones: 96817, 96587
  * =====================================================================================
  */
+#ifndef ABB_H
+#define ABB_H
 
+#include <stdbool.h>
 
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
@@ -24,18 +27,37 @@ typedef struct abb_iter abb_iter_t;
  *  PRIMITIVAS DEL ABB
  *-----------------------------------------------------------------------------*/
 
+// Crea el abb.
+// Post: devuelve el abb, NULL en caso de error.
 abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato);
 
+// Guarda un par clave-valor en una posición del árbol que le corresponde según
+// su clave. Si la clave ya está presente, se reemplaza el dato asociado
+// Pre: el árbol fue creado
+// Post: devuelve true si todo OK, false en caso de error.
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato);
 
+// Pre: el árbol fue creado
+// Post: devuelve el dato asociado a la clave que quiere borrarse. Borra el nodo
+// del arbol
 void *abb_borrar(abb_t *arbol, const char *clave);
 
+// Pre: el árbol fue creado
+// Post: devuelve el valor asociado a la clave pasado por parámetro. NULL si la
+// clave no está presente.
 void *abb_obtener(const abb_t *arbol, const char *clave);
 
+// Pre: el árbol fue creado
+// Post: devuelve true si la clave pasada por parámetro está presente en el
+// árbol, false en caso contrario
 bool abb_pertenece(const abb_t *arbol, const char *clave);
 
+// Pre: e árbol fue creado.
+// Post: devuelve la cantidad de nodos del árbol
 size_t abb_cantidad(abb_t *arbol);
 
+// Pre: el arbol fue creado
+// Post: borra todos los datos que hay en el árbol y libera la memoria
 void abb_destruir(abb_t *arbol);
 
 /*-----------------------------------------------------------------------------
@@ -77,4 +99,4 @@ bool abb_iter_in_al_final(const abb_iter_t *iter);
 // Pre: el iterador fue creado.
 void abb_iter_in_destruir(abb_iter_t* iter);
 
-
+#endif // ABB_H
