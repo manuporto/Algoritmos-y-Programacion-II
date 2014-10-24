@@ -144,6 +144,7 @@ void prueba_heap_volumen(size_t elementos)
 }
 void prueba_heap_sort()
 {
+    printf("INICIO DE PRUEBAS HEAPSORT\n");
     int uno = 1;
 	int tres = 3;
 	int cinco = 5;
@@ -152,10 +153,10 @@ void prueba_heap_sort()
 	int ocho = 8;
 	int nueve = 9;
 	int *vector[] = {&seis, &tres, &cinco, &ocho, &uno, &nueve, &siete};
-    int *vector_esp[] = {&nueve, &ocho, &siete, &seis, &cinco, &tres, &uno};
+    int *vector_esp[] = {&uno, &tres, &cinco, &seis, &siete, &ocho, &nueve};
 	heap_sort((void**)vector, 7, cmp);
 
-    for(size_t i = 0; i < sizeof(vector); i++)
+    for(size_t i = 0; i < 7; i++)
     {
         if(vector[i] != vector_esp[i])
         {
@@ -175,7 +176,7 @@ int main(){
     prueba_heap_encolar();
     prueba_heap_desencolar();
     prueba_heap_destruir();
-    //prueba_heap_volumen();
+    prueba_heap_volumen(800);
     prueba_heap_sort();
 	return 0;
 }
