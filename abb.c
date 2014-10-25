@@ -72,20 +72,13 @@ static void nodo_destruir(nodo_abb_t *nodo_abb, void destruir_dato(void*))
 
 void nodo_swap_clave_dato(nodo_abb_t *nodo1, nodo_abb_t *nodo2){
 	char *clave_aux = nodo1->clave;
-	void *dato_aux = nodo1->clave;
+	void *dato_aux = nodo1->dato;
 	nodo1->clave = nodo2->clave;
 	nodo1->dato = nodo2->dato;
 	nodo2->clave = clave_aux;
 	nodo2->dato = dato_aux;
 	// Solo cambio las referencias a la clave y el dato porque quiero que la
 	// estructura del nodo conserve las referencias a sus respectivos hijos
-}
-
-void nodo_swap_completo(nodo_abb_t *nodo1, nodo_abb_t *nodo2){
-	// Podría reutilizar el código de arriba, pero es más directo hacerlo así
-	nodo_abb_t *aux = nodo1;
-	*nodo1 = *nodo2;
-	*nodo2 = *aux;
 }
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DEL ÁRBOL
@@ -112,9 +105,10 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 		nodo_abb_t *nodo_padre;
 		int cmp;
 		while(nodo_actual){
-			nodo_padre = nodo_actual;
+			
 			cmp = arbol->comparar(clave, nodo_actual->clave);
 			// La clave es mas grande que la actual. Avanzo a la derecha
+			if(cmp!=0) nodo_padre = nodo_actual;
 			if(cmp > 0) nodo_actual = nodo_actual->der;
 			// La clave es mas chica que la actual. Avanzo a la izquierda
 			if(cmp < 0) nodo_actual = nodo_actual->izq;
@@ -133,7 +127,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 		// La clave no existía y debo insertarla. Tengo que verificar si va a la
 		// derecha o izquierda del padre
 		if(cmp > 0) nodo_padre->der = nodo_nuevo;
-		else nodo_padre->izq = nodo_nuevo;
+		else if(cmp < 0)nodo_padre->izq = nodo_nuevo;
 	}
 	arbol->cantidad = arbol->cantidad + 1;
 	return true;
