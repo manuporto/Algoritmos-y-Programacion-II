@@ -1,23 +1,27 @@
+CC = gcc
+CFLAGS = -Wall -pedantic --std=c99 -g
 
-CFLAGS=-g -Wall -std=c99 -pedantic
-EXEC=prueba_hash
-CC=gcc
-SRC=$(wildcard *.c)
-OBJS=$(SRC:.c=.o)
-LDFLAGS=
+SOURCES = heap.c
+HEADERS = $(SOURCES:.c=.h) 
+OBJECTS = $(SOURCES:.c=.o)
+EXEC= prueba_heap
 
-ifneq (,$(shell grep -lm 1 \'^\s*\#.*include.*\<math\.h\>\' *.h *.c ))
-	LDFLAGS+=-lm
-endif
+VALGRIND = valgrind --track-origins=yes --leak-check=full
+#Fin de la configuracion
 
-all: clean $(EXEC)
+all: $(EXEC) $(OBJECTS)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
+$(EXEC): $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) prueba_heap.c -o $(EXEC)
 
-$(EXEC): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(EXEC)
+$(OBJECTS): $(SOURCES) $(HEADERS)
+	$(CC) $(CFLAGS) $(SOURCES) -c
+
+run: $(EXEC)
+	./$(EXEC)
+
+valgrind: $(EXEC)
+	$(VALGRIND) ./$(EXEC)
 
 clean:
 	rm -f *.o $(EXEC)
-
