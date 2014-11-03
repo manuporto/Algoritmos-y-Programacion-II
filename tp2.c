@@ -41,6 +41,9 @@ int main(){
             char *cantidad = strtok(NULL, "");
             sistema_buscar(sistema, buscado, orden, cantidad);
         }
+        else{
+            printf("ERROR_COMANDO_INVALIDO\n");
+        }
         free(linea);
         linea = leer_linea();
     }
