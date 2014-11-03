@@ -44,4 +44,7 @@ bool vector_generico_guardar(vector_generico_t *vector, size_t pos, void *valor)
 // Pre: el vector fue creado
 size_t vector_generico_obtener_tam(vector_generico_t *vector);
 
+// Devuelve la cantidad de elementos que hay en el vector
+size_t vector_generico_obtener_cant(vector_generico_t *vector);
+
 #endif // VGENERICO_H

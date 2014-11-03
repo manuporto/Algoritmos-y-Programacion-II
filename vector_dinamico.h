@@ -44,4 +44,7 @@ bool vector_guardar(vector_t *vector, size_t pos, int valor);
 // Pre: el vector fue creado
 size_t vector_obtener_tamanio(vector_t *vector);
 
+// Devuelve la cantidad de elementos que hay en el vector
+size_t vector_obtener_cantidad(vector_t *vector);
+
 #endif // VECTOR_H
