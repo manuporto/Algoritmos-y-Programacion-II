@@ -14,6 +14,9 @@
 #include "hash.h"
 #include "heap.h"
 #include "sistema.h"
+#include "cola.h"
+#include "vector_dinamico.h"
+#include "vector_generico.h"
 #define FACT_AGR 2
 
 /*-----------------------------------------------------------------------------
@@ -50,6 +53,21 @@ void imprimir_error(size_t codigo){
             break;
     }
 }
+
+cola_t *analizar_tweet(char* usuario, char* mensaje){
+    char *palabra = strtok(mensaje, " ");
+    cola_t *cola = cola_crear();
+    cola_encolar(cola, usuario);
+    while(palabra){
+        if(palabra[0] == '@' || palabra[0] == '#')
+            cola_encolar(cola, palabra);
+        palabra = strtok(NULL, " ");
+    }
+    return cola;
+}
+
+// Hacer un CMP que reciba dos estructuras de tweets y compararlos según la 
+// cantidad de favoritos
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE TWEET
  *-----------------------------------------------------------------------------*/
@@ -117,33 +135,61 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *tweet){
     
     // ATENCION: No se esta verificando las posibles fallas de estas
     // funciones/primitivas. Hay que ver como tratamos este tema.
-    // Falta tratar los hashtags y usuarios en el mensaje!!!
     tweet_t *tweet = tweet_crear(sistema, nombre, tweet);
     vector_generico_guardar(sistema->tweets, tweet->id, tweet);
 
-    if(hash_pertenece(sistema->hash, tweet->usuario)){
-        vector_t *tweets_asociados = hash_obtener(sistema->hash, tweet->usuario);
-        size_t pos = vector_obtener_cantidad(tweets_asociados);
-        size_t tam = vector_obtener_tamanio(tweets_asociados)
-        if(tam  == pos){
-            vector_redimensionar(tweets_asociados, tam * FACT_AGR);
+    cola_t *cola = analizar_tweet(nombre, tweet);
+    // Como mínimo la cola tiene al usuario que realizó el tweet
+    char *palabra_destacada = cola_desencolar(cola);
+    while(palabra_destacada){
+        if(hash_pertenece(sistema->hash, tweet->usuario)){
+            vector_t *tweets_asociados = hash_obtener(sistema->hash, tweet->usuario);
+            size_t pos = vector_obtener_cantidad(tweets_asociados);
+            vector_guardar(tweets_asociados, pos, tweet->id);
+        }else{
+            vector_t *vector = vector_crear(10);
+            vector_guardar(vector, 0, tweet->id);
+            hash_guardar(sistema->hash, tweet->usuario, vector);
         }
-        vector_guardar(tweets_asociados, pos, tweet->id);
-    }else{
-        vector_t *vector = vector_crear(10);
-        vector_guardar(vector, 0, tweet->id);
-        hash_guardar(sistema->hash, tweet->usuario, vector);
     }
+    printf("OK %zu\n", tweet->id);
 }
 
 void sistema_favorito(sistema_t *sistema, char *id){
-    if(id > vector_obtener_cantidad(sistema->tweets)){
+    long id_l = strtol(id, NULL, 10);
+    if(id_l > vector_obtener_cantidad(sistema->tweets) || id_l < 0){
         imprimir_error(2);
         return;
-    } 
-    sistema->tweets[id]->favs++;
+    }
+    vector_generico_obtener(sistema->tweets, id_l)->favs++;
+    printf("OK %lu\n", id_l)
 }
 
 void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantidad){
-    return;
+    long cant_mostrar = strtol(cantidad, NULL, 10);
+    vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
+    size_t cant_tweets = vector_obtener_cantidad(tweets_ids);
+    if(cant_mostrar == 0 || cant cant_mostrar >= cant_tweets)
+        cant_mostrar = cant_tweets;
+    
+    if(!strcmp(orden, "cronologico")){
+        printf("OK %zu\n", cant_mostrar);
+        size_t id;
+        char *usuario;
+        char *tweet;
+        for(size_t i = cant_mostrar - 1; true; i--){
+            id = vector_obtener(tweets_ids, i);
+            usuario = vector_generico_obtener(sistema->tweets, id)->usuario;
+            tweet = vector_generico_obtener(sistema->tweets, id)->mensaje;
+            printf("%zu %s %s\n", id, usuario, tweet);
+            if(i == 0)
+                break;
+        }
+    }
+    else if(!strcmp(orden, "popular")){
+        // Crear un vector de tweets (la estructura completa) en el mismo orden
+        // que están los IDs. Hacer heapify. Sacar hasta alcanzar la cantidad a
+        // mostrar
+        
+    }
 }
