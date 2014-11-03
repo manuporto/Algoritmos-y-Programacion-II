@@ -1,3 +1,13 @@
+/*
+ * =====================================================================================
+ *  Archivo:  sistema.c
+ *  Description:  Archivo de sistema del tp2
+ *  Autores: Porto Manuel Ignacio, Sueiro Ignacio Andres 
+ *  Padrones: 96587, *insertar padron*  
+ *
+ * =====================================================================================
+ */
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -5,13 +15,29 @@
 #include "heap.h"
 #include "sistema.h"
 
+/*-----------------------------------------------------------------------------
+ *  DEFINICION DE ESTRUCTURAS
+ *-----------------------------------------------------------------------------*/
+
 struct sistema{
-	hash_t *hash;
-	vector_generico_t *tweets;
+    hash_t *hash;
+    vector_generico_t *tweets;
 };
 
-struct tweet{
-	char *mensaje;
-	size_t id;
-	size_t favs;
-};
+typedef struct tweet{
+    char *mensaje;
+    size_t id;
+    size_t favs;
+}tweet;
+
+/*-----------------------------------------------------------------------------
+ *  FUNCIONES AUXILIARES
+ *-----------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVAS DE TWEET
+ *-----------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------
+ *  PRIMITIVAS DE SISTEMA
+ *-----------------------------------------------------------------------------*/
