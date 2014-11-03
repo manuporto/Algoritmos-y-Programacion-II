@@ -1,10 +1,6 @@
 #ifndef SISTEMA_H
 #define SISTEMA_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
  *-----------------------------------------------------------------------------*/
@@ -12,7 +8,7 @@
 typedef struct sistema sistema_t;
 
 /*-----------------------------------------------------------------------------
- *  PRIMITIVAS DEL TP2
+ *  PRIMITIVAS DE SISTEMA
  *-----------------------------------------------------------------------------*/
 
 // Post: Crea y devuelve un puntero al sistema
@@ -38,4 +34,9 @@ void sistema_favorito(sistema_t *sistema, char *id);
 // Post: se muestran por pantalla todos los resultados de búsqueda
 void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantidad);
 
-#endif // VECTOR_H
+// Destruye el sistema.
+// Pre: el sistema fue creado.
+// Post: Se destruye el sistema y la informacion asociada a el.
+void sistema_destruir(sistema_t *sistema);
+
+#endif // SISTEMA_H
