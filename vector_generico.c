@@ -9,6 +9,7 @@
 
 typedef struct vector{
 	size_t tam;
+	size_t cant;
 	void **datos;
 };
 
@@ -28,6 +29,7 @@ vector_generico_t* vector_generico_crear(size_t tam){
 	    return NULL;
 	}
 	vector->tam = tam;
+	vector->cant = 0;
 	return vector;
 }
 
@@ -55,6 +57,7 @@ bool vector_generico_redimensionar(vector_generico_t *vector, size_t tam_nuevo){
 	    return false;
 	
 	vector->datos = datos_nuevo;
+	if (tam_nuevo < vector->cant) vector->cant = tam_nuevo;
 	vector->tam = tam_nuevo;
 	return true;
 }
@@ -79,6 +82,7 @@ bool vector_generico_guardar(vector_generico_t *vector, size_t pos, void *valor)
 		return false;
 	
 	vector->datos[pos] = valor;
+	vector->cant = vector->cant + 1;
 	return true;
 }
 
@@ -88,3 +92,7 @@ size_t vector_generico_obtener_tam(vector_generico_t *vector){
 	return vector->tam;
 }
 
+// Devuelve la cantidad de elementos que hay en el vector
+size_t vector_generico_obtener_cant(vector_generico_t *vector){
+	return vector->cant;
+}

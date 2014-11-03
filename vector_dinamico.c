@@ -10,6 +10,7 @@
 typedef struct vector
 {
 	size_t tam;
+	size_t cant;
 	int *datos;
 };
 
@@ -31,6 +32,7 @@ vector_t* vector_crear(size_t tam)
 	    return NULL;
 	}
 	vector->tam = tam;
+	vector->cant = 0;
 	return vector;
 }
 
@@ -58,6 +60,7 @@ bool vector_redimensionar(vector_t *vector, size_t tam_nuevo)
 	    return false;
 	}
 	vector->datos = datos_nuevo;
+	if(tam_nuevo < vector->cant) vector->cant = tam_nuevo;
 	vector->tam = tam_nuevo;
 	return true;
 }
@@ -89,6 +92,7 @@ bool vector_guardar(vector_t *vector, size_t pos, int valor)
 	}
 	else{
 		vector -> datos[pos] = valor;
+		vector->cant = vector->cant + 1;
 		return true;
 	}
 }
@@ -100,3 +104,7 @@ size_t vector_obtener_tamanio(vector_t *vector)
 	return vector -> tam;
 }
 
+// Devuelve la cantidad de elementos que hay en el vector
+size_t vector_obtener_cantidad(vector_t *vector){
+	return vector->cant;
+}
