@@ -87,6 +87,7 @@ bool vector_obtener(vector_t *vector, size_t pos, int *valor)
 // se guardó el valor con éxito.
 bool vector_guardar(vector_t *vector, size_t pos, int valor)
 {
+	if(vector->cant >= vector->tam) vector_redimensionar(vector, vector->tam * 2);
 	if(pos < 0 || pos >= vector -> tam){
 		return false;
 	}

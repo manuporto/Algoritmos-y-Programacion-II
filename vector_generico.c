@@ -78,6 +78,7 @@ void *vector_generico_obtener(vector_generico_t *vector, size_t pos){
 // es inválida (fuera del rango del vector, que va de 0 a tamaño-1) y true si
 // se guardó el valor con éxito.
 bool vector_generico_guardar(vector_generico_t *vector, size_t pos, void *valor){
+	if(vector->cant >= vector->tam) vector_generico_redimensionar(vector, vector->tam * 2);
 	if(pos < 0 || pos >= vector -> tam)
 		return false;
 	
