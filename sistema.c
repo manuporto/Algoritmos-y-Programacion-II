@@ -184,7 +184,7 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         imprimir_error(1);
         return;
     }
-    unsigned long cant_mostrar = strtol(cantidad, NULL, 10);
+    long cant_mostrar = strtol(cantidad, NULL, 10);
     vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
     size_t cant_tweets = vector_obtener_cantidad(tweets_ids);
     if(cant_mostrar == 0 || cant_mostrar >= cant_tweets)
@@ -195,7 +195,7 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         size_t id;
         char *usuario;
         char *tweet;
-        for(size_t i = cant_mostrar - 1; i >= 0; i--){
+        for(long i = cant_mostrar - 1; i >= 0; i--){
             id = vector_obtener(tweets_ids, i);
             usuario = vector_generico_obtener(sistema->tweets, id)->usuario;
             tweet = vector_generico_obtener(sistema->tweets, id)->mensaje;
