@@ -18,6 +18,9 @@
 
 #include "lectura.h"
 #include "sistema.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main(){
     const char twittear[] = "twittear";
@@ -27,22 +30,22 @@ int main(){
     char *linea = leer_linea();
     sistema_t *sistema = sistema_crear();
     while(!feof(stdin)){
-        char *comando = strtok(NULL, " ");
+        char *comando = strtok(linea, " ");
         if(!strcmp(twittear, comando)){
-            char *nombre = strtok(linea, " ");
+            char *nombre = strtok(NULL, " ");
             char *twit = strtok(NULL, "");
             sistema_twittear(sistema, nombre, twit);
         }else if(!strcmp(favorito, comando)){
             char *id = strtok(NULL, "");
-            sistema_favorito(sistema, nombre, id);
-        }else if(!strcmp(buscar, comando){
+            sistema_favorito(sistema, id);
+        }else if(!strcmp(buscar, comando)){
             char *buscado = strtok(NULL, " ");
             char *orden = strtok(NULL, " ");
             char *cantidad = strtok(NULL, "");
             sistema_buscar(sistema, buscado, orden, cantidad);
         }
         else{
-            printf("ERROR_COMANDO_INVALIDO\n");
+            imprimir_error(1);
         }
         free(linea);
         linea = leer_linea();

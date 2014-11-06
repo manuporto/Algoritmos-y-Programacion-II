@@ -7,7 +7,7 @@
  *                DEFINICION DE LOS TIPOS DE DATOS
  ******************************************************************/
 
-typedef struct vector{
+struct vector{
 	size_t tam;
 	size_t cant;
 	void **datos;
