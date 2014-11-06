@@ -1,8 +1,10 @@
+#include <stdbool.h>
+#include <stddef.h>
+
 #ifndef COLA_H
 #define COLA_H
 
-#include <stdbool.h>
-#include <stddef.h>
+
 
 /* ******************************************************************
  *                DEFINICION DE LOS TIPOS DE DATOS

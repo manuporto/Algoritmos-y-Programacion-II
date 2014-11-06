@@ -39,4 +39,7 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
 // Post: Se destruye el sistema y la informacion asociada a el.
 void sistema_destruir(sistema_t *sistema);
 
+// Imprime el mensaje de error correspondiente al código pasado por parámetro
+void imprimir_error(int codigo);
+
 #endif // SISTEMA_H
