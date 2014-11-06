@@ -54,7 +54,7 @@ void imprimir_error(size_t codigo){
     }
 }
 
-cola_t *analizar_tweet(char* usuario, char* mensaje){
+static cola_t *analizar_tweet(char* usuario, char* mensaje){
     char *palabra = strtok(mensaje, " ");
     cola_t *cola = cola_crear();
     cola_encolar(cola, usuario);
@@ -66,13 +66,13 @@ cola_t *analizar_tweet(char* usuario, char* mensaje){
     return cola;
 }
 
-// Hacer un CMP que reciba dos estructuras de tweets y compararlos según la 
-// cantidad de favoritos
 /*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE TWEET
  *-----------------------------------------------------------------------------*/
 
-tweet_t *tweet_crear(sistema_t *sistema, char *usuario, char *mensaje){
+// Crea un tweet.
+// Pre: devuelve un puntero a un tweet. En caso de error devuelve NULL.
+static tweet_t *tweet_crear(sistema_t *sistema, char *usuario, char *mensaje){
 	char *usuario_cpy = malloc(sizeof(char) * strlen(usuario) + 1);
 	if(!usuario_cpy)
 		return NULL;
@@ -96,7 +96,19 @@ tweet_t *tweet_crear(sistema_t *sistema, char *usuario, char *mensaje){
 	return tweet;
 }
 
-void tweet_destruir(tweet_t *tweet){
+// Compara dos tweets en base a la cantidad de favoritos de cada uno.
+// Pre: los dos tweets fueron creados.
+// Post: devuelve 1 si los favs de tweet1 son mayores a los de tweet2.
+// 0 en caso de ser iguales y -1 si la cantidad de favs de tweet1 es menor
+// que la de tweet2.
+static size_t tweet_cmp(tweet_t *tweet1, tweet_t *tweet2){
+    if(tweet1->favs > tweet2->favs) return 1;
+    else if(tweet1->favs == tweet2->favs) return 0;
+    return -1;
+}
+
+// Destruye el tweet.
+static void tweet_destruir(tweet_t *tweet){
 	free(tweet->usuario);
 	free(tweet->mensaje);
 	free(tweet);
@@ -166,30 +178,49 @@ void sistema_favorito(sistema_t *sistema, char *id){
 }
 
 void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantidad){
-    long cant_mostrar = strtol(cantidad, NULL, 10);
+    const char cronologico[] = "cronologico";
+    const char popular[] = "popular";
+    if(strcmp(orden, cronologico) && strcmp(orden, popular)){
+        imprimir_error(1);
+        return;
+    }
+    unsigned long cant_mostrar = strtol(cantidad, NULL, 10);
     vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
     size_t cant_tweets = vector_obtener_cantidad(tweets_ids);
-    if(cant_mostrar == 0 || cant cant_mostrar >= cant_tweets)
+    if(cant_mostrar == 0 || cant_mostrar >= cant_tweets)
         cant_mostrar = cant_tweets;
-    
-    if(!strcmp(orden, "cronologico")){
-        printf("OK %zu\n", cant_mostrar);
+
+    printf("OK %zu\n", cant_mostrar);
+    if(!strcmp(orden, cronologico)){
         size_t id;
         char *usuario;
         char *tweet;
-        for(size_t i = cant_mostrar - 1; true; i--){
+        for(size_t i = cant_mostrar - 1; i >= 0; i--){
             id = vector_obtener(tweets_ids, i);
             usuario = vector_generico_obtener(sistema->tweets, id)->usuario;
             tweet = vector_generico_obtener(sistema->tweets, id)->mensaje;
             printf("%zu %s %s\n", id, usuario, tweet);
-            if(i == 0)
-                break;
         }
     }
-    else if(!strcmp(orden, "popular")){
+    else if(!strcmp(orden, popular)){
+        vector_generico_t *tweets = vector_generico_crear(cant_tweets);
+        for(size_t i = 0; i < cant_tweets; i++){
+            size_t id = vector_obtener(tweets_id, i);
+            tweet_t *tweet = vector_generico_obtener(sistema->tweets, id);
+            vector_generico_guardar(tweets, tweet);
+        }
+
+        heap_t *tweets_ordenados = heapify(tweets, cant_tweets, tweet_cmp);
+        for(size_t i = 0; i < cant_mostrar && 
+                !heap_esta_vacio(tweets_ordenados); i++){
+            tweet_t *tweet_actual = heap_desencolar(tweets_ordenados);
+            printf("%zu %s %s\n", id, usuario, tweet);
+        }
+
+        heap_destruir(tweets_ordenados, NULL);
+        vector_generico_destruir(tweets, NULL);
         // Crear un vector de tweets (la estructura completa) en el mismo orden
         // que están los IDs. Hacer heapify. Sacar hasta alcanzar la cantidad a
         // mostrar
-        
     }
 }
