@@ -38,7 +38,7 @@ vector_generico_t* vector_generico_crear(size_t tam){
 // Post: se eliminaron todos los elementos del vector
 void vector_generico_destruir(vector_generico_t *vector, void destruir_dato(void *)){
 	if(destruir_dato)
-		for(size_t i = 0; i < vector->tam; i++) 
+		for(size_t i = 0; i < vector->cant; i++) 
 			destruir_dato(vector->datos[i]);
 	free(vector->datos);
 	free(vector);

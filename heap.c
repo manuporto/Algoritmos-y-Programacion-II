@@ -111,7 +111,7 @@ static void downheap(heap_t *heap, size_t pos_ini){
 	}
 }
 
-heap_t *heapify(void **vector, size_t cant, cmp_func_t cmp){
+heap_t *heapify(void **vector, long long cant, cmp_func_t cmp){
 	heap_t *heap_aux = heap_crear(cmp);
 	void **vector_aux = heap_aux->vector;
 	heap_aux->vector = vector;
