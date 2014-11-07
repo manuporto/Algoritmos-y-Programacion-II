@@ -75,7 +75,7 @@ void *heap_desencolar(heap_t *heap);
 // Recibe un vector de punteros, la cantidad de elementos que hay en el y
 // una función de comparación.
 // Post: devuelve un heap con los elementos del vector
-heap_t *heapify(void **vector, size_t cant, cmp_func_t cmp);
+heap_t *heapify(void **vector, long long cant, cmp_func_t cmp);
 
 #endif // _HEAP_H
 

@@ -112,8 +112,9 @@ static int tweet_cmp_t(const void *a, const void *b){
 //typedef int(*tweet_cmp_t)(const void *a, const void *b);
 
 // Destruye el tweet.
-static void tweet_destruir(tweet_t *tweet){
-	free(tweet->usuario);
+static void tweet_destruir(void *a){
+	tweet_t *tweet = a;
+    free(tweet->usuario);
 	free(tweet->mensaje);
 	free(tweet);
 }
@@ -126,7 +127,7 @@ sistema_t *sistema_crear(){
     sistema_t *sistema = malloc(sizeof(sistema_t));
     if(!sistema) return NULL;
 
-    sistema->hash = hash_crear(NULL);
+    sistema->hash = hash_crear((hash_destruir_dato_t)vector_destruir);
     if(!sistema->hash){
         free(sistema);
         return NULL;
@@ -144,6 +145,11 @@ sistema_t *sistema_crear(){
 }
 
 void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
+    if(!nombre || !mensaje){
+        imprimir_error(1);
+        return;
+    }
+
     if(strlen(mensaje) > 150){
         imprimir_error(3);
         return;
@@ -158,27 +164,33 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
     // Como mínimo la cola tiene al usuario que realizó el tweet
     char *palabra_destacada = cola_desencolar(cola);
     while(palabra_destacada){
-        if(hash_pertenece(sistema->hash, tweet->usuario)){
-            vector_t *tweets_asociados = hash_obtener(sistema->hash, tweet->usuario);
+        if(hash_pertenece(sistema->hash, palabra_destacada)){
+            vector_t *tweets_asociados = hash_obtener(sistema->hash, palabra_destacada);
             size_t pos = vector_obtener_cantidad(tweets_asociados);
             vector_guardar(tweets_asociados, pos, tweet->id);
         }else{
             vector_t *vector = vector_crear(10);
             vector_guardar(vector, 0, tweet->id);
-            hash_guardar(sistema->hash, tweet->usuario, vector);
+            hash_guardar(sistema->hash, palabra_destacada, vector);
         }
         palabra_destacada = cola_desencolar(cola);
     }
+    cola_destruir(cola, NULL);
     printf("OK %zu\n", tweet->id);
 }
 
 void sistema_favorito(sistema_t *sistema, char *id){
-    long id_l = strtol(id, NULL, 10);
+    char *id_c = strtok(id, " ");
+    char *extra = strtok(NULL, "");
+    if(extra){
+        imprimir_error(1);
+        return;
+    }
+    long id_l = strtol(id_c, NULL, 10);
     if(id_l > vector_obtener_cantidad(sistema->tweets) || id_l < 0){
         imprimir_error(2);
         return;
     }
-    //MODIFICAR (HACERLO EN DOS LINEAS PARA QUE SEA MÁS LEGIBLE)
     tweet_t *tweet_favorito = vector_generico_obtener(sistema->tweets, id_l);
     tweet_favorito->favs++;
     printf("OK %lu\n", id_l);
@@ -187,10 +199,11 @@ void sistema_favorito(sistema_t *sistema, char *id){
 void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantidad){
     const char cronologico[] = "cronologico";
     const char popular[] = "popular";
-    if(strcmp(orden, cronologico) && strcmp(orden, popular)){
+    if(!orden || !cantidad || (strcmp(orden, cronologico) && strcmp(orden, popular))){
         imprimir_error(1);
         return;
     }
+    
     long cant_mostrar = strtol(cantidad, NULL, 10);
     vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
     // Yo ya sé que si obtener me devuelve NULL, no hay ningun tweet asociado
@@ -199,8 +212,8 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         printf("OK 0\n");
         return;
     }
-    size_t cant_tweets = vector_obtener_cantidad(tweets_ids);
-    if(cant_mostrar == 0 || cant_mostrar >= cant_tweets)
+    long cant_tweets = vector_obtener_cantidad(tweets_ids);
+    if(cant_mostrar == 0 || cant_mostrar > cant_tweets)
         cant_mostrar = cant_tweets;
 
     printf("OK %lu\n", cant_mostrar);
@@ -208,7 +221,7 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         int id;
         char *usuario;
         char *tweet;
-        for(long i = cant_mostrar - 1; i >= 0; i--){
+        for(long i = cant_tweets - 1; i >= cant_tweets - cant_mostrar; i--){
             vector_obtener(tweets_ids, i, &id);
             tweet_t *actual = vector_generico_obtener(sistema->tweets, id); 
             usuario = actual->usuario;
@@ -217,7 +230,7 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         }
     }
     else if(!strcmp(orden, popular)){
-        void *tweets[cant_tweets];
+        void **tweets = malloc(sizeof(tweet_t) * cant_tweets);
         for(size_t i = 0; i < cant_tweets; i++){
             int id;
             vector_obtener(tweets_ids, i, &id);
