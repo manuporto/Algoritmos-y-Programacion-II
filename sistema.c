@@ -159,7 +159,7 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
     vector_generico_guardar(sistema->tweets, tweet->id, tweet);
 
     cola_t *cola = analizar_tweet(nombre, mensaje);
-    // Como mínimo la cola tiene al usuario que realizó el tweet
+    // Como minimo la cola tiene al usuario que realizo el tweet
     char *palabra_destacada = cola_desencolar(cola);
     while(palabra_destacada){
         if(hash_pertenece(sistema->hash, palabra_destacada)){
