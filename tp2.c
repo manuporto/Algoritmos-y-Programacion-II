@@ -1,18 +1,9 @@
 /*
  * =====================================================================================
- *
- *       Filename:  tp2.c
- *
- *    Description:  
- *
- *        Version:  1.0
- *        Created:  03/11/14 11:21:32
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  YOUR NAME (), 
- *   Organization:  
- *
+ *  Archivo:  tp2.c
+ *  Descripcion: Flujo principal del programa.  
+ *  Autores: Porto Manuel Ignacio, Sueiro Ignacio Andres 
+ *  Padrones: 96587, 96817  
  * =====================================================================================
  */
 
