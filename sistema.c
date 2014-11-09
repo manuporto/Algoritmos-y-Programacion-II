@@ -4,7 +4,6 @@
  *  Description:  Archivo de sistema del tp2
  *  Autores: Porto Manuel Ignacio, Sueiro Ignacio Andres 
  *  Padrones: 96587, 96817  
- *
  * =====================================================================================
  */
 
@@ -17,7 +16,6 @@
 #include "cola.h"
 #include "vector_dinamico.h"
 #include "vector_generico.h"
-#define FACT_AGR 2
 
 /*-----------------------------------------------------------------------------
  *  DEFINICION DE ESTRUCTURAS
@@ -54,6 +52,10 @@ void imprimir_error(int codigo){
     }
 }
 
+// Analiza un mensaje en busca de palabras destacadas (palabras que comiencen
+// con "@" o "#") En caso de encontrarlas las guarda en una cola.
+// Pre: usuario y mensaje no son cadenas vacias.
+// Post: devuelve una cola con las palabras destacadas.
 static cola_t *analizar_tweet(char* usuario, char* mensaje){
     char *palabra = strtok(mensaje, " ");
     cola_t *cola = cola_crear();
@@ -71,7 +73,7 @@ static cola_t *analizar_tweet(char* usuario, char* mensaje){
  *-----------------------------------------------------------------------------*/
 
 // Crea un tweet.
-// Pre: devuelve un puntero a un tweet. En caso de error devuelve NULL.
+// Post: devuelve un puntero a un tweet. En caso de error devuelve NULL.
 static tweet_t *tweet_crear(sistema_t *sistema, char *usuario, char *mensaje){
 	char *usuario_cpy = malloc(sizeof(char) * strlen(usuario) + 1);
 	if(!usuario_cpy)
@@ -109,9 +111,8 @@ static int tweet_cmp_t(const void *a, const void *b){
     return -1;
 }
 
-//typedef int(*tweet_cmp_t)(const void *a, const void *b);
-
 // Destruye el tweet.
+// Pre: el tweet fue creado.
 static void tweet_destruir(void *a){
 	tweet_t *tweet = a;
     free(tweet->usuario);
@@ -133,7 +134,6 @@ sistema_t *sistema_crear(){
         return NULL;
     }
 
-    // Tire un tamanio random, quizas convenga crearlo con mas capacidad.
     sistema->tweets = vector_generico_crear(10);
     if(!sistema->tweets){
         hash_destruir(sistema->hash);
@@ -155,8 +155,6 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
         return;
     }
     
-    // ATENCION: No se esta verificando las posibles fallas de estas
-    // funciones/primitivas. Hay que ver como tratamos este tema.
     tweet_t *tweet = tweet_crear(sistema, nombre, mensaje);
     vector_generico_guardar(sistema->tweets, tweet->id, tweet);
 
@@ -167,6 +165,7 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
         if(hash_pertenece(sistema->hash, palabra_destacada)){
             vector_t *tweets_asociados = hash_obtener(sistema->hash, palabra_destacada);
             size_t pos = vector_obtener_cantidad(tweets_asociados);
+            // El id del tweet mas reciente se inserta al final del vector.
             vector_guardar(tweets_asociados, pos, tweet->id);
         }else{
             vector_t *vector = vector_crear(10);
@@ -182,10 +181,12 @@ void sistema_twittear(sistema_t *sistema, char *nombre, char *mensaje){
 void sistema_favorito(sistema_t *sistema, char *id){
     char *id_c = strtok(id, " ");
     char *extra = strtok(NULL, "");
+    // Si hay palabras de mas, se imprime el error de comando invalido.
     if(extra){
         imprimir_error(1);
         return;
     }
+
     long id_l = strtol(id_c, NULL, 10);
     if(id_l > vector_obtener_cantidad(sistema->tweets) || id_l < 0){
         imprimir_error(2);
@@ -203,25 +204,28 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         imprimir_error(1);
         return;
     }
-    
-    long cant_mostrar = strtol(cantidad, NULL, 10);
-    vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
-    // Yo ya sé que si obtener me devuelve NULL, no hay ningun tweet asociado
-    // a la búsqueda (nunca voy a guardar NULL)
-    if(!tweets_ids){
+
+    bool e_tweets = hash_pertenece(sistema->hash, buscado);
+    if(!e_tweets){
         printf("OK 0\n");
         return;
     }
+
+    long cant_mostrar = strtol(cantidad, NULL, 10);
+    vector_t *tweets_ids = hash_obtener(sistema->hash, buscado);
     long cant_tweets = vector_obtener_cantidad(tweets_ids);
+    // Si la cantidad a mostrar es 0 o si es mayor que los tweets existentes
+    // referidos a buscado, se imprimen todos los tweets.
     if(cant_mostrar == 0 || cant_mostrar > cant_tweets)
         cant_mostrar = cant_tweets;
-
     printf("OK %lu\n", cant_mostrar);
+
     if(!strcmp(orden, cronologico)){
         int id;
         char *usuario;
         char *tweet;
-        for(long i = cant_tweets - 1; i >= cant_tweets - cant_mostrar; i--){
+        for(int i = cant_tweets - 1; i >= cant_tweets - cant_mostrar; i--){
+            // Se van mostrando los tweets del final hacia el inicio.
             vector_obtener(tweets_ids, i, &id);
             tweet_t *actual = vector_generico_obtener(sistema->tweets, id); 
             usuario = actual->usuario;
@@ -230,6 +234,9 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
         }
     }
     else if(!strcmp(orden, popular)){
+        // Se van obteniendo los ids y luego se busca en sistema->tweets
+        // el tweet correspondiente a ese id. Luego se guarda el tweet en el
+        // vector tweets.
         void **tweets = malloc(sizeof(tweet_t) * cant_tweets);
         for(size_t i = 0; i < cant_tweets; i++){
             int id;
@@ -238,11 +245,14 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
             tweets[i] = tweet;
         }
 
+        // Se crea un heap, de maximo, de los tweets y se le van desencolando
+        // los tweets con mayor cantidad de favoritos.
         heap_t *tweets_ordenados = heapify(tweets, cant_tweets, tweet_cmp_t);
         for(size_t i = 0; i < cant_mostrar && 
                 !heap_esta_vacio(tweets_ordenados); i++){
             tweet_t *tweet_actual = heap_desencolar(tweets_ordenados);
-            printf("%i %s %s\n", tweet_actual->id, tweet_actual->usuario, tweet_actual->mensaje);
+            printf("%zu %s %s\n", tweet_actual->id, tweet_actual->usuario, 
+                    tweet_actual->mensaje);
         }
 
         heap_destruir(tweets_ordenados, NULL);

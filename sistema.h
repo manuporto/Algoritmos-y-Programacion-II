@@ -8,10 +8,20 @@
 typedef struct sistema sistema_t;
 
 /*-----------------------------------------------------------------------------
+ *  FUNCIONES AUXILIARES
+ *-----------------------------------------------------------------------------*/
+
+// Imprime el mensaje de error correspondiente al código pasado por parámetro.
+// Codigo 1: ERROR_COMANDO_INVALIDO
+// Codigo 2: ERROR_TWIT_ID_INVALIDO
+// Codigo 3: ERROR_TWIT_DEMASIADO_LARGO
+void imprimir_error(int codigo);
+
+/*-----------------------------------------------------------------------------
  *  PRIMITIVAS DE SISTEMA
  *-----------------------------------------------------------------------------*/
 
-// Post: Crea y devuelve un puntero al sistema
+// Post: Crea y devuelve un puntero al sistema. En caso de error devuelve NULL.
 sistema_t *sistema_crear();
 
 // Recibe por parámetro el sistema al que se agregará el tweet, el usuario que
@@ -20,16 +30,16 @@ sistema_t *sistema_crear();
 // Post: se agrega el tweet al sistema
 void sistema_twittear(sistema_t *sistema, char *nombre, char *tweet);
 
-// Recibe por parámetro el sistema en el que está el tweet y el id que correspon
-// de al mensaje que se quiere agregar a favoritos. (Dentro de la primitiva se
-// convierte el id a número)
+// Recibe por parámetro el sistema en el que está el tweet y el id que 
+// corresponde al mensaje que se quiere agregar a favoritos. (Dentro de la 
+// primitiva se convierte el id a número)
 // Pre: el sistema fue creado
 // Post: se le suma 1 a la cantidad de favoritos del tweet
 void sistema_favorito(sistema_t *sistema, char *id);
 
-// Recibe el sistema en el cual se buscaran los tweets, el parámetro de búsqueda,
-// el orden (cronológico o de favoritos) y la cantidad (0 si se desean ver todos
-// los tweets).
+// Recibe el sistema en el cual se buscaran los tweets, el parámetro de 
+// búsqueda, el orden (cronológico o de favoritos) y la cantidad (0 si se desean
+// ver todos los tweets).
 // Pre: el sistema fue creado.
 // Post: se muestran por pantalla todos los resultados de búsqueda
 void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantidad);
@@ -38,8 +48,5 @@ void sistema_buscar(sistema_t *sistema, char *buscado, char *orden, char *cantid
 // Pre: el sistema fue creado.
 // Post: Se destruye el sistema y la informacion asociada a el.
 void sistema_destruir(sistema_t *sistema);
-
-// Imprime el mensaje de error correspondiente al código pasado por parámetro
-void imprimir_error(int codigo);
 
 #endif // SISTEMA_H
