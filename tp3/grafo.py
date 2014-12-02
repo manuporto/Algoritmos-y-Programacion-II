@@ -1,13 +1,11 @@
 class Grafo(object):
     def __init__(self):
         self.adyacencias = {}
-        self.vertices = []
 
     def agregar_vertice(self, vertice):
-        if vertice in self.vertices:
+        if vertice in self.adyacencias:
             return
         self.adyacencias[vertice] = {}
-        self.vertices.append(vertice)
 
     def agregar_arista(self, vertice1, vertice2):
         if vertice1 in self.adyacencias[vertice2]:
@@ -28,8 +26,21 @@ class Grafo(object):
             del self.adyacencias[vertice_b][vertice]
 
         del self.adyacencias[vertice]
-        self.vertices.remove(vertice)
 
     def eliminar_arista(self, vertice1, vertice2):
         del self.adyacencias[vertice1][vertice2]
         del self.adyacencias[vertice2][vertice1]
+
+    def obtener_adyacencias(self, vertice):
+        if vertice in self.adyacencias:
+            return self.adyacencias[vertice].keys()
+        return []
+
+    def obtener_vertices(self):
+        return self.adyacencias.keys()    
+
+    def estan_conectados(self, vertice1, vertice2):
+        return vertice2 in self.adyacencias[vertice1]
+
+    def esta_en_grafo(self, nombre):
+        return nombre in self.adyacencias

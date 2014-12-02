@@ -19,25 +19,52 @@ class Sistema(object):
         # por cada vertice encontrado se lo agrega a recomendaciones. Si ese
         # vertice vuelve a aparecer en otro "adyacente de adyacente", le
         # aumento el valor "amigos en comun"
-        for ady in self.grafo.adyacencias[musico]:
-            for candidato in self.grafo.adyacencias[ady]:
+        for ady in self.grafo.obtener_adyacencias(musico):
+            for candidato in self.grafo.obtener_adyacencias(ady):
+                # Si el musico ya es amigo del candidato, paso al siguiente
+                if self.grafo.estan_conectados(musico, candidato):
+                    continue
                 if candidato in recomendaciones.keys():
                     recomendaciones[candidato] += 1
                 else:
                     recomendaciones[candidato] = 1
 
         musicos_rec = recomendaciones.items()
-        sorted(musicos_rec,
-               key = lambda music_rec: musicos_rec[1],
-               reverse= True)
-        for recomendado in musicos_rec:
-            print musicos_rec[0]
+        musicos_rec.sort(key = lambda musico_rec: musico_rec[1], reverse = True)
+        for i in range(cantidad):
+            print musicos_rec[i][0]
 
     def difundir(self, musicos):
         '''(lista de musicos) -> lista de musicos que se enteraran de la
         informacion difundida.
         '''
-        pass
+        informados = {}
+        for musico in musicos:
+            if self.grafo.esta_en_grafo(musico):
+                informados[musico] = True
+        while True:
+            cambio = False
+            posibles_informados = {}
+            for musico in informados:
+                amigos_musico = self.grafo.obtener_adyacencias(musico)
+                for amigo in amigos_musico:
+                    if not amigo in posibles_informados and not amigo in informados:
+                        posibles_informados[amigo] = None
+            for candidato in posibles_informados:
+                # Esto itera esobre las claves (es lo mismo que agregar .keys())
+                contador = 0
+                contactos = self.grafo.obtener_adyacencias(candidato)
+                long_necesaria = len(contactos)
+                for contacto in contactos:
+                    if contacto in informados:
+                        contador += 1
+                    if contador > (long_necesaria / 2):
+                        cambio = True
+                        informados[candidato] = True
+                        continue
+            if not cambio:
+                break
+        print informados.keys()
 
     def centralidad(self, cantidad):
         '''(int) -> lista de vertices  mas centrales'''
@@ -69,7 +96,7 @@ def bfs(grafo, s):
     visitados = []
     padre = {}
     d = {}
-    for v in grafo.vertices:
+    for v in grafo.obtener_vertices():
         d[v] = float("inf")
         padre[v] = None
 
@@ -80,7 +107,7 @@ def bfs(grafo, s):
 
     while not cola.empty():
         u = cola.get()
-        for v in grafo.adyacencias[u]:
+        for v in grafo.obtener_adyacencias(u):
             if v not in visitados:
                 visitados.append(v)
                 d[v] = d[u] + 1
