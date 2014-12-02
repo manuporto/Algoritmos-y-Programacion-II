@@ -7,6 +7,7 @@ def main():
     CENTRALIDAD = "centralidad"
     CAMINO = "camino"
     DISTANCIAS = "distancias"
+    SUBGRUPOS = "subgrupos"
 
     programa = Sistema()
     programa.inicializar("grafo_chico.txt")
@@ -31,6 +32,10 @@ def main():
             if len(musicos) != 2:
                 continue
             programa.camino(musicos[0], musicos[1])
+
+        elif palabras[0] == SUBGRUPOS and len(palabras) == 1:
+            programa.subgrupos()
+
         else:
             print "Aca va un ERROR"
             # Imprimir error de comando.

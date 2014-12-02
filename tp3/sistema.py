@@ -48,7 +48,7 @@ class Sistema(object):
             for musico in informados:
                 amigos_musico = self.grafo.obtener_adyacencias(musico)
                 for amigo in amigos_musico:
-                    if not amigo in posibles_informados and not amigo in informados:
+                    if not amigo in posibles_informados and amigo not in informados:
                         posibles_informados[amigo] = None
             for candidato in posibles_informados:
                 # Esto itera esobre las claves (es lo mismo que agregar .keys())
@@ -87,9 +87,40 @@ class Sistema(object):
         for i in xrange(1, len(contar_dist.keys()) - 1):
             print contar_dist[str(i)]
 
+    def subgrupos(self):
+        """Pre: -
+        Post: imprime en orden decreciente el tamanio de los subgrupos
+        presentes en el grafo.
+        """
+        vertices_faltantes = self.grafo.obtener_vertices()
+        largo_subgrupos = []
+
+        while vertices_faltantes:
+            subgrupo = crear_subgrupo(self.grafo, vertices_faltantes[0])
+            largo_subgrupos.append(len(subgrupo))
+            for v in subgrupo:
+                vertices_faltantes.remove(v)
+
+        largo_subgrupos.sort(reverse = True)
+        for subgrupo in largo_subgrupos:
+            print subgrupo
+
 ##############################################################################
 #   FUNCIONES AUXILIARES
 ##############################################################################
+
+
+def crear_subgrupo(grafo, vertice):
+    '''
+    Pre: el grafo fue creado y el vertice pertenece al grafo.
+    Post: devuelve una lista con el subgrupo al que pertenece el vertice.
+    '''
+    subgrupo = []
+    padre, distancias = bfs(grafo, vertice)
+    for v in distancias:
+        if distancias[v] < float("inf"):
+            subgrupo.append(v)
+    return subgrupo
 
 
 def bfs(grafo, s):

@@ -37,7 +37,7 @@ class Grafo(object):
         return []
 
     def obtener_vertices(self):
-        return self.adyacencias.keys()    
+        return self.adyacencias.keys()
 
     def estan_conectados(self, vertice1, vertice2):
         return vertice2 in self.adyacencias[vertice1]
