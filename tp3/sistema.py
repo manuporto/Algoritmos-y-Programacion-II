@@ -1,3 +1,4 @@
+#coding: utf-8
 from grafo import Grafo
 import Queue
 
@@ -64,10 +65,28 @@ class Sistema(object):
                         continue
             if not cambio:
                 break
-        print informados.keys()
+        print len(informados.keys())
 
     def centralidad(self, cantidad):
-        '''(int) -> lista de vertices  mas centrales'''
+        '''(int) -> lista de vertices  mas centrales
+        Hace BFS de cada vertice del grafo, recorre cada camino mínimo y por
+        cada aparición de un vértice, le suma 1 a su contador. Imprime los
+        vértices con mayor cantidad de ocurrencias en caminos mínimos'''
+        contador = {}
+        for vertice in self.grafo.obtener_vertices():
+            contador[vertice] = 0
+        for vertice in contador:
+            padre, distancias = bfs(self.grafo, vertice)
+            for alcanzado in distancias:
+                vertice_actual = alcanzado
+                while padre[vertice_actual] != vertice and padre[vertice_actual] != None:
+                    contador[padre[vertice_actual]] += 1
+                    vertice_actual = padre[vertice_actual]
+        devolucion = contador.items()
+        devolucion.sort(key = lambda contador:contador[1], reverse = True)
+        for x in range(int(cantidad)):
+            print devolucion[x][0]
+
 
     def camino(self, musico1, musico2):
         padre, distancias = bfs(self.grafo, musico1)
@@ -124,14 +143,14 @@ def crear_subgrupo(grafo, vertice):
 
 
 def bfs(grafo, s):
-    visitados = []
+    visitados = {}
     padre = {}
     d = {}
     for v in grafo.obtener_vertices():
         d[v] = float("inf")
         padre[v] = None
 
-    visitados.append(s)
+    visitados[s] = True
     d[s] = 0
     cola = Queue.Queue()
     cola.put(s)
@@ -140,7 +159,7 @@ def bfs(grafo, s):
         u = cola.get()
         for v in grafo.obtener_adyacencias(u):
             if v not in visitados:
-                visitados.append(v)
+                visitados[v] = True
                 d[v] = d[u] + 1
                 padre[v] = u
                 cola.put(v)
