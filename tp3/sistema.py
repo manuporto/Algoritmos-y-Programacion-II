@@ -8,12 +8,15 @@ class Sistema(object):
         self.grafo = Grafo()
 
     def inicializar(self, nombre_archivo):
+    """(str) -> None
+    Completa el grafo del sistema con los vertices y aristas presentes en
+    el archivo."""
         leer_archivo(self.grafo, nombre_archivo)
 
     def recomendar(self, musico, cantidad):
-        '''(vertice, int) -> lista de contactos recomendados
+        """(vertice, int) -> lista de contactos recomendados
         Se le recomienda una cantidad de contactos a agregar al musico
-        indicado.'''
+        indicado."""
         # Musico recomendado: amigos en comun
         recomendaciones = {}
         # Recorro los adyacentes a musico. Luego busco los adyacentes a esos y
@@ -36,9 +39,8 @@ class Sistema(object):
             print musicos_rec[i][0]
 
     def difundir(self, musicos):
-        '''(lista de musicos) -> lista de musicos que se enteraran de la
-        informacion difundida.
-        '''
+        """(lista de musicos) -> lista de musicos que se enteraran de la
+        informacion difundida."""
         informados = {}
         for musico in musicos:
             if self.grafo.esta_en_grafo(musico):
@@ -69,10 +71,10 @@ class Sistema(object):
         print len(informados.keys())
 
     def centralidad(self, cantidad):
-        '''(int) -> lista de vertices  mas centrales
+        """(int) -> lista de vertices  mas centrales
         Hace BFS de cada vertice del grafo, recorre cada camino mínimo y por
         cada aparición de un vértice, le suma 1 a su contador. Imprime los
-        vértices con mayor cantidad de ocurrencias en caminos mínimos'''
+        vértices con mayor cantidad de ocurrencias en caminos mínimos."""
         try:
             int(cantidad)
         except:
@@ -97,10 +99,15 @@ class Sistema(object):
 
 
     def camino(self, musico1, musico2):
+        """(musico1, musico2) -> None
+        Imprime el camino entre dos musicos."""
         padre, distancias = bfs(self.grafo, musico1)
         imprimir_camino(padre, musico1, musico2)
 
     def distancias(self, musico):
+        """ (musico) -> None
+        Imprime la cantidad de musicos que se encuentran a distancia 
+        1, 2, ..., n del musico."""
         padre, distancias = bfs(self.grafo, musico)
         contar_dist = {}
 
@@ -138,10 +145,9 @@ class Sistema(object):
 
 
 def crear_subgrupo(grafo, vertice):
-    '''
+    """(grafo, vertice) -> lista
     Pre: el grafo fue creado y el vertice pertenece al grafo.
-    Post: devuelve una lista con el subgrupo al que pertenece el vertice.
-    '''
+    Post: devuelve una lista con el subgrupo al que pertenece el vertice."""
     subgrupo = []
     padre, distancias = bfs(grafo, vertice)
     for v in distancias:
@@ -151,6 +157,9 @@ def crear_subgrupo(grafo, vertice):
 
 
 def bfs(grafo, origen, destino = None):
+    """(grafo, origen, destino) -> lista de padres, diccionario
+    de distancias a origen de cada vertice.
+    Realiza una busqueda por anchur del grafo."""
     visitados = {}
     padre = {}
     distancia = {}
@@ -178,6 +187,9 @@ def bfs(grafo, origen, destino = None):
 
 
 def leer_archivo(grafo, nombre_archivo):
+    """(str) -> None
+    Lee la informacion de un archivo y agrega los vertices o aristas
+    al grafo cuando corresponde."""
     archivo = open(nombre_archivo)
     # Se supone que toda la informacion del archivo es correcta. Ej:
     # cant_vertices es en efecto, igual a los vertices presentados, no hay
@@ -201,6 +213,9 @@ def leer_archivo(grafo, nombre_archivo):
 
 
 def imprimir_camino(padre, s, v):
+    """ (dicc, origen, destino) -> None
+    Imprime el camino entre un vertice de origen y uno de
+    destino."""
     if v == s:
         print s
     elif padre[v] is None:
