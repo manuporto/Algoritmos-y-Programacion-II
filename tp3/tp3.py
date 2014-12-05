@@ -42,8 +42,8 @@ populares que desea conocer")
                 if len(palabras) == 2:
                     programa.distancias(palabras[1])
                 else:
-                    raise RuntimeError("(!)Debe insertar dos músicos para \
-conocer sus distancias")
+                    raise RuntimeError("(!)Debe insertar un músicos para \
+conocer a que distancia se encuentran los demás artistas")
 
             elif palabras[0] == CAMINO:
                 musicos = palabras[1].split(",")
