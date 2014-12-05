@@ -8,9 +8,9 @@ class Sistema(object):
         self.grafo = Grafo()
 
     def inicializar(self, nombre_archivo):
-    """(str) -> None
-    Completa el grafo del sistema con los vertices y aristas presentes en
-    el archivo."""
+        """(str) -> None.
+        Completa el grafo del sistema con los vertices y aristas presentes en
+        el archivo."""
         leer_archivo(self.grafo, nombre_archivo)
 
     def recomendar(self, musico, cantidad):
@@ -68,7 +68,7 @@ class Sistema(object):
                         continue
             if not cambio:
                 break
-        print len(informados.keys())
+        print informados.keys()
 
     def centralidad(self, cantidad):
         """(int) -> lista de vertices  mas centrales
@@ -111,15 +111,20 @@ class Sistema(object):
         padre, distancias = bfs(self.grafo, musico)
         contar_dist = {}
 
-        for d in distancias.values():
-            d_s = str(d)
-            if d_s not in contar_dist.keys():
-                contar_dist[d_s] = 1
+        for musico, dist in distancias.items():
+            if dist == float("inf") or dist == 0:
+                continue
+            dist_s = str(dist)
+            if dist_s not in contar_dist:
+                contar_dist[dist_s] = [musico]
             else:
-                contar_dist[d_s] += 1
+                contar_dist[dist_s].append(musico)
 
-        for i in xrange(1, len(contar_dist.keys()) - 1):
-            print contar_dist[str(i)]
+        for distancia in contar_dist:
+            print distancia + ": ",
+            for musico in contar_dist[distancia]:
+                print musico,
+            print
 
     def subgrupos(self):
         """Pre: -
@@ -219,7 +224,7 @@ def imprimir_camino(padre, s, v):
     if v == s:
         print s
     elif padre[v] is None:
-        print "No hay camino/ERROR"
+        raise RuntimeError("(!)No hay un camino que conecte a estos músicos")
     else:
         imprimir_camino(padre, s, padre[v])
         print v
