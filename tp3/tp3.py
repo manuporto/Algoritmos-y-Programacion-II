@@ -60,8 +60,8 @@ partir (primero) y uno al cual llegar (segundo) separados por una coma (,)")
 extra")
             else:
                 raise RuntimeError("(!)Comando desconocido. Por favor ingrese \
-alguno de los siguiente comandos:\n\t-Recomendar\n\t-Difundir\n\t-Centralidad\n\
-\t-Distancias\n\t-Camino\n\t-Subgrupo")
+alguno de los siguiente comandos:\n\t-recomendar\n\t-difundir\n\t-centralidad\n\
+\t-distancias\n\t-camino\n\t-subgrupo")
         except RuntimeError, e:
             print e
 
