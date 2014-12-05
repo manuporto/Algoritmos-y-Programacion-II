@@ -1,3 +1,4 @@
+#coding: utf-8
 from sistema import Sistema
 
 
@@ -15,30 +16,55 @@ def main():
 
     while linea:
         palabras = linea.split()
-        if palabras[0] == RECOMENDAR and len(palabras) == 3:
-            programa.recomendar(palabras[1], palabras[2])
+        try:
+            if palabras[0] == RECOMENDAR:
+                if len(palabras) == 3:
+                    programa.recomendar(palabras[1], palabras[2])
+                else:
+                    raise RuntimeError("(!)Los parámetros son incorrectos.\n\
+(!)Se espera 'comando musico cantidad'") 
 
-        elif palabras[0] == DIFUNDIR and len(palabras) > 1:
-            programa.difundir(palabras[1:])
+            elif palabras[0] == DIFUNDIR:
+                if len(palabras) > 1:
+                    programa.difundir(palabras[1:])
+                else:
+                    raise RuntimeError("(!)Inserte al menos un musico con el \
+cual difundir la información")
 
-        elif palabras[0] == CENTRALIDAD and len(palabras) == 2:
-            programa.centralidad(palabras[1])
+            elif palabras[0] == CENTRALIDAD:
+                if len(palabras) == 2:
+                    programa.centralidad(palabras[1])
+                else:
+                    raise RuntimeError("(!)Debe insertar la cantidad de musico \
+populares que desea conocer")
 
-        elif palabras[0] == DISTANCIAS and len(palabras) == 2:
-            programa.distancias(palabras[1])
+            elif palabras[0] == DISTANCIAS: 
+                if len(palabras) == 2:
+                    programa.distancias(palabras[1])
+                else:
+                    raise RuntimeError("(!)Debe insertar dos músicos para \
+conocer sus distancias")
 
-        elif palabras[0] == CAMINO:
-            musicos = palabras[1].split(",")
-            if len(musicos) != 2:
-                continue
-            programa.camino(musicos[0], musicos[1])
+            elif palabras[0] == CAMINO:
+                musicos = palabras[1].split(",")
+                if len(musicos) != 2:
+                    raise RuntimeError("(!)Debe insertar un músico del cual \
+partir (primero) y uno al cual llegar (segundo) separados por una coma (,)")
+                programa.camino(musicos[0], musicos[1])
 
-        elif palabras[0] == SUBGRUPOS and len(palabras) == 1:
-            programa.subgrupos()
+            elif palabras[0] == SUBGRUPOS:
+                if len(palabras) == 1:
+                    programa.subgrupos()
+                else:
+                    raise RuntimeError("(!)Este comando no recibe parámetros \
+extra")
+            else:
+                raise RuntimeError("(!)Comando desconocido. Por favor ingrese \
+alguno de los siguiente comandos:\n\t-Recomendar\n\t-Difundir\n\t-Centralidad\n\
+\t-Distancias\n\t-Camino\n\t-Subgrupo")
+        except RuntimeError, e:
+            print e
 
-        else:
-            print "Aca va un ERROR"
-            # Imprimir error de comando.
         linea = raw_input()
 
 if __name__ == '__main__':

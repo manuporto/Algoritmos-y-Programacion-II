@@ -32,7 +32,7 @@ class Sistema(object):
 
         musicos_rec = recomendaciones.items()
         musicos_rec.sort(key = lambda musico_rec: musico_rec[1], reverse = True)
-        for i in range(cantidad):
+        for i in range(1, int(cantidad) + 1):
             print musicos_rec[i][0]
 
     def difundir(self, musicos):
@@ -49,7 +49,8 @@ class Sistema(object):
             for musico in informados:
                 amigos_musico = self.grafo.obtener_adyacencias(musico)
                 for amigo in amigos_musico:
-                    if not amigo in posibles_informados and amigo not in informados:
+                    if amigo not in posibles_informados and \
+                    amigo not in informados:
                         posibles_informados[amigo] = None
             for candidato in posibles_informados:
                 # Esto itera esobre las claves (es lo mismo que agregar .keys())
@@ -72,6 +73,12 @@ class Sistema(object):
         Hace BFS de cada vertice del grafo, recorre cada camino mínimo y por
         cada aparición de un vértice, le suma 1 a su contador. Imprime los
         vértices con mayor cantidad de ocurrencias en caminos mínimos'''
+        try:
+            int(cantidad)
+        except:
+            raise RuntimeError("(!)La cantidad debe ser un número entero")
+        if int(cantidad) < 1:
+            raise RuntimeError("(!)La cantidad debe ser un número positivo")
         contador = {}
         for vertice in self.grafo.obtener_vertices():
             contador[vertice] = 0
@@ -79,7 +86,8 @@ class Sistema(object):
             padre, distancias = bfs(self.grafo, vertice)
             for alcanzado in distancias:
                 vertice_actual = alcanzado
-                while padre[vertice_actual] != vertice and padre[vertice_actual] != None:
+                while padre[vertice_actual] != vertice and \
+                padre[vertice_actual] != None:
                     contador[padre[vertice_actual]] += 1
                     vertice_actual = padre[vertice_actual]
         devolucion = contador.items()
@@ -142,31 +150,31 @@ def crear_subgrupo(grafo, vertice):
     return subgrupo
 
 
-def bfs(grafo, s):
+def bfs(grafo, origen, destino = None):
     visitados = {}
     padre = {}
-    d = {}
-    for v in grafo.obtener_vertices():
-        d[v] = float("inf")
-        padre[v] = None
+    distancia = {}
+    for vertice in grafo.obtener_vertices():
+        distancia[vertice] = float("inf")
+        padre[vertice] = None
 
-    visitados[s] = True
-    d[s] = 0
+    visitados[origen] = True
+    distancia[origen] = 0
     cola = Queue.Queue()
-    cola.put(s)
+    cola.put(origen)
 
     while not cola.empty():
-        u = cola.get()
-        for v in grafo.obtener_adyacencias(u):
-            if v not in visitados:
-                visitados[v] = True
-                d[v] = d[u] + 1
-                padre[v] = u
-                cola.put(v)
-    # Todavia no se muy bien que conviene devolver, asi que devuelvo tanto
-    # padre como d.
+        if destino is not None and destino in visitado:
+            break
+        actual = cola.get()
+        for vecino in grafo.obtener_adyacencias(actual):
+            if vecino not in visitados:
+                visitados[vecino] = True
+                distancia[vecino] = distancia[actual] + 1
+                padre[vecino] = actual
+                cola.put(vecino)
 
-    return padre, d
+    return padre, distancia
 
 
 def leer_archivo(grafo, nombre_archivo):
